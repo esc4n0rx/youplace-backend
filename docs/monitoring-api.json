@@ -1,0 +1,99 @@
+{
+    "baseUrl": "http://localhost:3001/api/v1",
+    "description": "API de Monitoramento e Logging do YouPlace",
+    "version": "1.0.0",
+    "routes": {
+      "dashboard": {
+        "method": "GET",
+        "path": "/monitoring/dashboard",
+        "description": "Dashboard principal com métricas, logs e saúde do sistema",
+        "auth": true,
+        "admin": true,
+        "queryParams": {
+          "timeframe": "Período para análise (1h, 6h, 24h, 7d, 30d)"
+        }
+      },
+      "health": {
+        "method": "GET", 
+        "path": "/monitoring/health",
+        "description": "Status de saúde básico dos serviços",
+        "auth": false
+      },
+      "healthDetailed": {
+        "method": "GET",
+        "path": "/monitoring/health/detailed", 
+        "description": "Status de saúde detalhado com métricas",
+        "auth": true,
+        "admin": true
+      },
+      "metrics": {
+        "method": "GET",
+        "path": "/monitoring/metrics",
+        "description": "Métricas de performance do sistema",
+        "auth": true,
+        "admin": true,
+        "queryParams": {
+          "timeframe": "Período (1h, 6h, 24h, 7d, 30d)",
+          "type": "Tipo específico de métrica (opcional)"
+        }
+      },
+      "realTimeMetrics": {
+        "method": "GET",
+        "path": "/monitoring/metrics/realtime",
+        "description": "Métricas em tempo real (últimos 5 minutos)",
+        "auth": true,
+        "admin": true
+      },
+      "logs": {
+        "method": "GET",
+        "path": "/monitoring/logs",
+        "description": "Logs do sistema com filtros",
+        "auth": true,
+        "admin": true,
+        "queryParams": {
+          "limit": "Número de logs (padrão: 100)",
+          "level": "Nível do log (info, warn, error, debug)",
+          "type": "Tipo do log (audit, security, performance, etc.)",
+          "userId": "ID do usuário",
+          "endpoint": "Endpoint específico",
+          "since": "Data de início (ISO)",
+          "until": "Data de fim (ISO)"
+        }
+      },
+      "alerts": {
+        "method": "GET", 
+        "path": "/monitoring/alerts",
+        "description": "Alertas e eventos críticos",
+        "auth": true,
+        "admin": true,
+        "queryParams": {
+          "limit": "Número de alertas (padrão: 20)"
+        }
+      },
+      "exportLogs": {
+        "method": "GET",
+        "path": "/monitoring/export/logs",
+        "description": "Export de logs em JSON ou CSV",
+        "auth": true,
+        "admin": true,
+        "rateLimited": "5 req/min",
+        "queryParams": {
+          "format": "Formato (json, csv)",
+          "since": "Data de início",
+          "until": "Data de fim",
+          "level": "Nível do log",
+          "type": "Tipo do log",
+          "limit": "Máximo 1000"
+        }
+      }
+    },
+    "features": {
+      "automaticLogging": "Todas as requisições são automaticamente logadas",
+      "performanceMonitoring": "Métricas de tempo de resposta e recursos",
+      "securityDetection": "Detecção automática de atividades suspeitas",
+      "realTimeMetrics": "Métricas em tempo real com buffer de 30s",
+      "alerting": "Sistema de alertas baseado em thresholds",
+      "dataRetention": "Logs: 30 dias, Métricas: 7 dias (configurável)",
+      "exportCapability": "Export de dados para análise externa"
+    }
+  }

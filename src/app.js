@@ -7,8 +7,20 @@ const { rateLimiting } = require('./config/environment');
 const authRoutes = require('./presentation/routes/auth-routes');
 const pixelRoutes = require('./presentation/routes/pixel-routes');
 const creditRoutes = require('./presentation/routes/credit-routes');
-const gamificationRoutes = require('./presentation/routes/gamification-routes'); // NOVO
+const gamificationRoutes = require('./presentation/routes/gamification-routes');
+const monitoringRoutes = require('./presentation/routes/monitoring-routes'); // NOVO
 const { errorHandler, notFoundHandler } = require('./presentation/middlewares/error-middleware');
+const { 
+  morganMiddleware, 
+  structuredLogging, 
+  errorLogging, 
+  securityLogging 
+} = require('./presentation/middlewares/logging-middleware'); // NOVO
+const { 
+  requestMonitoring, 
+  rateLimitMonitoring,
+  resourceMonitoring 
+} = require('./presentation/middlewares/monitoring-middleware'); // NOVO
 const DailyBonusJob = require('./jobs/daily-bonus-job');
 
 const app = express();
@@ -41,15 +53,17 @@ app.use(limiter);
 // Trust proxy para obter IP real (importante para rate limiting e anti-abuse)
 app.set('trust proxy', 1);
 
+// === LOGGING E MONITORAMENTO ===
+app.use(morganMiddleware); // HTTP logging
+app.use(structuredLogging); // Log estruturado
+app.use(requestMonitoring); // Métricas de request
+app.use(rateLimitMonitoring); // Monitoramento de rate limit
+app.use(resourceMonitoring); // Monitoramento de recursos
+app.use(securityLogging); // Detecção de atividades suspeitas
+
 // Parsing de JSON
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
-
-// Logging básico
-app.use((req, res, next) => {
-  console.log(`${new Date().toISOString()} - ${req.method} ${req.path} - IP: ${req.ip}`);
-  next();
-});
 
 // Health check
 app.get('/health', (req, res) => {
@@ -59,7 +73,9 @@ app.get('/health', (req, res) => {
     timestamp: new Date().toISOString(),
     cronJobs: {
       dailyBonus: 'active'
-    }
+    },
+    version: '1.0.0',
+    uptime: process.uptime()
   });
 });
 
@@ -67,7 +83,11 @@ app.get('/health', (req, res) => {
 app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/pixels', pixelRoutes);
 app.use('/api/v1/credits', creditRoutes);
-app.use('/api/v1/gamification', gamificationRoutes); // NOVO
+app.use('/api/v1/gamification', gamificationRoutes);
+app.use('/api/v1/monitoring', monitoringRoutes); // NOVO
+
+// Middleware de erro de logging ANTES do handler de erro
+app.use(errorLogging);
 
 // Middleware de erro 404
 app.use(notFoundHandler);

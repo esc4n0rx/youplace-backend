@@ -1,4 +1,6 @@
 const AuthService = require('../../domain/services/auth-service');
+const { auditMiddleware } = require('../middlewares/logging-middleware');
+const { userActionMonitoring } = require('../middlewares/monitoring-middleware');
 
 class AuthController {
   constructor() {
@@ -6,6 +8,9 @@ class AuthController {
   }
 
   register = async (req, res, next) => {
+    // Aplicar monitoramento de ação do usuário
+    await userActionMonitoring('register')(req, res, () => {});
+    
     try {
       const { username, password } = req.body;
       const ip = req.ip || req.connection.remoteAddress || req.socket.remoteAddress;
@@ -23,6 +28,9 @@ class AuthController {
   };
 
   login = async (req, res, next) => {
+    // Aplicar monitoramento de ação do usuário
+    await userActionMonitoring('login')(req, res, () => {});
+    
     try {
       const { username, password } = req.body;
 
@@ -39,6 +47,9 @@ class AuthController {
   };
 
   googleAuth = async (req, res, next) => {
+    // Aplicar monitoramento de ação do usuário
+    await userActionMonitoring('google_auth')(req, res, () => {});
+    
     try {
       const { idToken } = req.body;
       const ip = req.ip || req.connection.remoteAddress || req.socket.remoteAddress;
