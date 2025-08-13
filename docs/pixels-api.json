@@ -1,0 +1,171 @@
+{
+    "baseUrl": "http://localhost:3001/api/v1",
+    "routes": {
+      "paintPixel": {
+        "method": "POST",
+        "path": "/pixels/paint",
+        "description": "Pintar um pixel no mapa",
+        "auth": true,
+        "headers": {
+          "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+        },
+        "request": {
+          "x": 1000,
+          "y": 500,
+          "color": "#FF0000"
+        },
+        "response": {
+          "success": true,
+          "message": "Pixel pintado com sucesso",
+          "data": {
+            "pixel": {
+              "id": "550e8400-e29b-41d4-a716-446655440000",
+              "x": 1000,
+              "y": 500,
+              "color": "#FF0000",
+              "userId": "550e8400-e29b-41d4-a716-446655440001",
+              "username": "testuser",
+              "createdAt": "2025-08-13T10:00:00.000Z"
+            }
+          }
+        }
+      },
+      "getPixelsByArea": {
+        "method": "GET",
+        "path": "/pixels/area?minX=0&maxX=50&minY=0&maxY=50",
+        "description": "Buscar pixels em uma área específica (máximo 100x100)",
+        "auth": false,
+        "response": {
+          "success": true,
+          "data": {
+            "pixels": [
+              {
+                "id": "550e8400-e29b-41d4-a716-446655440000",
+                "x": 25,
+                "y": 25,
+                "color": "#00FF00",
+                "userId": "550e8400-e29b-41d4-a716-446655440001",
+                "username": "player1",
+                "createdAt": "2025-08-13T10:00:00.000Z"
+              }
+            ],
+            "count": 1
+          }
+        }
+      },
+      "getPixelInfo": {
+        "method": "GET",
+        "path": "/pixels/1000/500",
+        "description": "Obter informações do último pixel pintado em uma coordenada",
+        "auth": false,
+        "response": {
+          "success": true,
+          "data": {
+            "pixel": {
+              "id": "550e8400-e29b-41d4-a716-446655440000",
+              "x": 1000,
+              "y": 500,
+              "color": "#FF0000",
+              "userId": "550e8400-e29b-41d4-a716-446655440001",
+              "username": "testuser",
+              "createdAt": "2025-08-13T10:00:00.000Z"
+            }
+          }
+        }
+      },
+      "getPixelHistory": {
+        "method": "GET",
+        "path": "/pixels/1000/500/history?limit=5",
+        "description": "Obter histórico de pixels pintados em uma coordenada",
+        "auth": false,
+        "response": {
+          "success": true,
+          "data": {
+            "history": [
+              {
+                "id": "550e8400-e29b-41d4-a716-446655440000",
+                "x": 1000,
+                "y": 500,
+                "color": "#FF0000",
+                "userId": "550e8400-e29b-41d4-a716-446655440001",
+                "username": "testuser",
+                "createdAt": "2025-08-13T10:00:00.000Z"
+              }
+            ],
+            "coordinates": { "x": 1000, "y": 500 }
+          }
+        }
+      },
+      "getUserStats": {
+        "method": "GET",
+        "path": "/pixels/user/stats?timeframe=24h",
+        "description": "Estatísticas do usuário (24h, 7d ou all)",
+        "auth": true,
+        "response": {
+          "success": true,
+          "data": {
+            "pixelCount": 15,
+            "timeframe": "24h"
+          }
+        }
+      },
+      "getCredits": {
+        "method": "GET",
+        "path": "/credits",
+        "description": "Obter saldo de créditos do usuário",
+        "auth": true,
+        "response": {
+          "success": true,
+          "data": {
+            "credits": 850
+          }
+        }
+      },
+      "claimDailyBonus": {
+        "method": "POST",
+        "path": "/credits/daily-bonus",
+        "description": "Coletar bônus diário de 250 créditos",
+        "auth": true,
+        "response": {
+          "success": true,
+          "message": "Bônus diário coletado com sucesso",
+          "data": {
+            "credited": 250,
+            "totalCredits": 1100
+          }
+        }
+      },
+      "getCreditHistory": {
+        "method": "GET",
+        "path": "/credits/history?limit=10",
+        "description": "Histórico de transações de crédito",
+        "auth": true,
+        "response": {
+          "success": true,
+          "data": {
+            "transactions": [
+              {
+                "id": "550e8400-e29b-41d4-a716-446655440000",
+                "userId": "550e8400-e29b-41d4-a716-446655440001",
+                "amount": -1,
+                "type": "pixel_paint",
+                "description": "Pixel pintado em (1000,500)",
+                "createdAt": "2025-08-13T10:00:00.000Z"
+              }
+            ]
+          }
+        }
+      }
+    },
+    "rateLimits": {
+      "pixelPaint": "2 pixels por minuto por IP",
+      "areaQuery": "20 consultas por 10 segundos por IP",
+      "historyQuery": "30 consultas por minuto por IP"
+    },
+    "antiBot": {
+      "pixelsPerHour": 50,
+      "pixelsPerMinute": 2,
+      "maxAreaSize": "100x100 pixels",
+      "coordinateValidation": "x: -180000 a 180000, y: -90000 a 90000"
+    }
+  }
