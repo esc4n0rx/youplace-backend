@@ -1,6 +1,7 @@
 const PixelRepository = require('../../data/repositories/pixel-repository');
 const CreditService = require('./credit-service');
 const AntiBotService = require('./anti-bot-service');
+const GamificationService = require('./gamification-service');
 const CoordinateSystem = require('../../shared/utils/coordinate-system');
 
 class PixelService {
@@ -9,6 +10,7 @@ class PixelService {
     this.creditService = new CreditService();
     this.antiBotService = new AntiBotService();
     this.coordinateSystem = new CoordinateSystem();
+    this.gamificationService = new GamificationService();
   }
 
   async paintPixel(userId, x, y, color, userCreatedAt = null) {
@@ -57,6 +59,13 @@ class PixelService {
         color: color.toUpperCase()
       });
 
+      const gamificationResult = await this.gamificationService.updatePixelProgress(userId, 1);
+       
+      if (gamificationResult.levelUp) {
+        console.log(`🎉 Level Up! Usuário ${userId}: ${gamificationResult.levelUp.oldLevel} → ${gamificationResult.levelUp.newLevel} (${gamificationResult.levelUp.newTitle})`);
+      }
+
+
       // Log para análise se risk score alto
       if (antiBotResult.riskScore > 50) {
         console.warn(`Alto risk score (${antiBotResult.riskScore}) para usuário ${userId} - pixel ${x},${y}`);
@@ -66,7 +75,16 @@ class PixelService {
         pixel,
         riskScore: antiBotResult.riskScore,
         warnings: antiBotResult.warnings,
-        geoCoordinates: this.coordinateSystem.pixelToGeo(x, y) // Incluir coordenadas geográficas
+        geoCoordinates: this.coordinateSystem.pixelToGeo(x, y),
+        // NOVO: Informações de gamificação
+        levelUp: gamificationResult.levelUp,
+        currentLevel: gamificationResult.userLevel.currentLevel,
+        progress: {
+          level: gamificationResult.userLevel.currentLevel,
+          title: gamificationResult.userLevel.title,
+          progressPercentage: gamificationResult.userLevel.getProgressPercentage(),
+          pixelsUntilNextLevel: gamificationResult.userLevel.getPixelsUntilNextLevel()
+        }
       };
     } catch (antiBotError) {
       // Se erro do anti-bot, não debitar créditos
@@ -95,11 +113,22 @@ class PixelService {
           color: color.toUpperCase()
         });
 
+        // Atualizar gamificação mesmo em fallback
+        const gamificationResult = await this.gamificationService.updatePixelProgress(userId, 1);
+
         return {
           pixel,
           riskScore: 0,
           warnings: ['Anti-bot service indisponível'],
-          geoCoordinates: this.coordinateSystem.pixelToGeo(x, y)
+          geoCoordinates: this.coordinateSystem.pixelToGeo(x, y),
+          levelUp: gamificationResult.levelUp,
+          currentLevel: gamificationResult.userLevel.currentLevel,
+          progress: {
+            level: gamificationResult.userLevel.currentLevel,
+            title: gamificationResult.userLevel.title,
+            progressPercentage: gamificationResult.userLevel.getProgressPercentage(),
+            pixelsUntilNextLevel: gamificationResult.userLevel.getPixelsUntilNextLevel()
+          }
         };
       } catch (error) {
         // Reverter débito em caso de erro
@@ -111,6 +140,7 @@ class PixelService {
     }
   }
 
+  
   async getPixelsByArea(minX, maxX, minY, maxY) {
     // Validar coordenadas
     if (!this.coordinateSystem.isValidPixelCoordinate(minX, minY) || 

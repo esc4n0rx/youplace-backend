@@ -7,6 +7,7 @@ const { rateLimiting } = require('./config/environment');
 const authRoutes = require('./presentation/routes/auth-routes');
 const pixelRoutes = require('./presentation/routes/pixel-routes');
 const creditRoutes = require('./presentation/routes/credit-routes');
+const gamificationRoutes = require('./presentation/routes/gamification-routes'); // NOVO
 const { errorHandler, notFoundHandler } = require('./presentation/middlewares/error-middleware');
 const DailyBonusJob = require('./jobs/daily-bonus-job');
 
@@ -66,6 +67,7 @@ app.get('/health', (req, res) => {
 app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/pixels', pixelRoutes);
 app.use('/api/v1/credits', creditRoutes);
+app.use('/api/v1/gamification', gamificationRoutes); // NOVO
 
 // Middleware de erro 404
 app.use(notFoundHandler);

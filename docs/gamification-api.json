@@ -1,0 +1,517 @@
+{
+    "baseUrl": "http://localhost:3001/api/v1",
+    "description": "Sistema de Gamificação do YouPlace - Níveis, títulos, rankings e conquistas",
+    "version": "1.0.0",
+    "maxLevel": 1000,
+    "totalTitles": 50,
+    "routes": {
+      "getUserLevel": {
+        "method": "GET",
+        "path": "/gamification/level",
+        "description": "Obter nível atual do usuário autenticado",
+        "auth": true,
+        "headers": {
+          "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+        },
+        "request": null,
+        "response": {
+          "success": true,
+          "data": {
+            "level": {
+              "id": "550e8400-e29b-41d4-a716-446655440000",
+              "userId": "550e8400-e29b-41d4-a716-446655440001",
+              "currentLevel": 15,
+              "totalPixelsPainted": 1850,
+              "pixelsForCurrentLevel": 350,
+              "pixelsForNextLevel": 500,
+              "title": "Mapeador Novato",
+              "experiencePoints": 1850,
+              "lastLevelUp": "2025-08-13T10:30:00.000Z",
+              "createdAt": "2025-08-13T09:00:00.000Z",
+              "updatedAt": "2025-08-13T10:30:00.000Z",
+              "progressPercentage": 70,
+              "pixelsUntilNextLevel": 150,
+              "levelPhase": {
+                "name": "Explorador",
+                "color": "#4CAF50",
+                "description": "Descobrindo o mundo"
+              },
+              "estimatedTimeToNextLevel": "Menos de 1 dia",
+              "percentageToMaxLevel": 0.18
+            }
+          }
+        }
+      },
+      "getUserStats": {
+        "method": "GET",
+        "path": "/gamification/stats",
+        "description": "Estatísticas completas do usuário (nível + ranking + conquistas + marcos)",
+        "auth": true,
+        "headers": {
+          "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+        },
+        "request": null,
+        "response": {
+          "success": true,
+          "data": {
+            "level": {
+              "id": "550e8400-e29b-41d4-a716-446655440000",
+              "userId": "550e8400-e29b-41d4-a716-446655440001",
+              "currentLevel": 25,
+              "totalPixelsPainted": 1500,
+              "pixelsForCurrentLevel": 200,
+              "pixelsForNextLevel": 800,
+              "title": "Aventureiro Continental",
+              "experiencePoints": 1500,
+              "lastLevelUp": "2025-08-13T08:15:00.000Z",
+              "progressPercentage": 25,
+              "pixelsUntilNextLevel": 600,
+              "levelPhase": {
+                "name": "Explorador",
+                "color": "#4CAF50",
+                "description": "Descobrindo o mundo"
+              },
+              "estimatedTimeToNextLevel": "3 dias",
+              "percentageToMaxLevel": 0.15
+            },
+            "ranking": 157,
+            "achievements": [
+              {
+                "id": "level_5",
+                "name": "Nível 5 Alcançado",
+                "description": "Chegou ao nível 5 - Viajante Curioso",
+                "unlockedAt": "2025-08-12T14:20:00.000Z",
+                "category": "level"
+              },
+              {
+                "id": "level_10",
+                "name": "Nível 10 Alcançado",
+                "description": "Chegou ao nível 10 - Navegador Urbano",
+                "unlockedAt": "2025-08-12T18:45:00.000Z",
+                "category": "level"
+              },
+              {
+                "id": "level_15",
+                "name": "Nível 15 Alcançado",
+                "description": "Chegou ao nível 15 - Mapeador Novato",
+                "unlockedAt": "2025-08-13T06:30:00.000Z",
+                "category": "level"
+              },
+              {
+                "id": "level_20",
+                "name": "Nível 20 Alcançado",
+                "description": "Chegou ao nível 20 - Descobridor Regional",
+                "unlockedAt": "2025-08-13T07:10:00.000Z",
+                "category": "level"
+              },
+              {
+                "id": "level_25",
+                "name": "Nível 25 Alcançado",
+                "description": "Chegou ao nível 25 - Aventureiro Continental",
+                "unlockedAt": "2025-08-13T08:15:00.000Z",
+                "category": "level"
+              },
+              {
+                "id": "pixels_100",
+                "name": "100 Pixels",
+                "description": "Pintou 100 pixels no mapa",
+                "unlockedAt": "2025-08-12T16:20:00.000Z",
+                "category": "pixels"
+              },
+              {
+                "id": "pixels_500",
+                "name": "500 Pixels",
+                "description": "Pintou 500 pixels no mapa",
+                "unlockedAt": "2025-08-12T20:30:00.000Z",
+                "category": "pixels"
+              },
+              {
+                "id": "pixels_1000",
+                "name": "1.000 Pixels",
+                "description": "Pintou 1.000 pixels no mapa",
+                "unlockedAt": "2025-08-13T05:45:00.000Z",
+                "category": "pixels"
+              }
+            ],
+            "milestones": [
+              {
+                "type": "level",
+                "target": 30,
+                "title": "Cartógrafo Experiente",
+                "pixelsRequired": 2400,
+                "phase": "Explorador",
+                "description": "Alcance o nível 30 para desbloquear \"Cartógrafo Experiente\"",
+                "estimatedTime": "~4 dias"
+              },
+              {
+                "type": "level",
+                "target": 35,
+                "title": "Explorador Intercontinental",
+                "pixelsRequired": 3200,
+                "phase": "Explorador",
+                "description": "Alcance o nível 35 para desbloquear \"Explorador Intercontinental\"",
+                "estimatedTime": "~7 dias"
+              },
+              {
+                "type": "level",
+                "target": 40,
+                "title": "Navegador dos Oceanos",
+                "pixelsRequired": 4100,
+                "phase": "Explorador",
+                "description": "Alcance o nível 40 para desbloquear \"Navegador dos Oceanos\"",
+                "estimatedTime": "~11 dias"
+              }
+            ]
+          }
+        }
+      },
+      "getLeaderboard": {
+        "method": "GET",
+        "path": "/gamification/leaderboard?limit=10",
+        "description": "Ranking dos jogadores por nível e total de pixels",
+        "auth": false,
+        "queryParams": {
+          "limit": "Número de jogadores no ranking (padrão: 10, máximo: 50)"
+        },
+        "request": null,
+        "response": {
+          "success": true,
+          "data": {
+            "leaderboard": [
+              {
+                "id": "550e8400-e29b-41d4-a716-446655440000",
+                "userId": "550e8400-e29b-41d4-a716-446655440001",
+                "username": "PixelMaster",
+                "currentLevel": 125,
+                "totalPixelsPainted": 45780,
+                "title": "Pintor de Continentes",
+                "experiencePoints": 45780,
+                "levelPhase": {
+                  "name": "Cartógrafo",
+                  "color": "#2196F3",
+                  "description": "Mapeando territórios"
+                }
+              },
+              {
+                "id": "550e8400-e29b-41d4-a716-446655440002",
+                "userId": "550e8400-e29b-41d4-a716-446655440003",
+                "username": "WorldExplorer",
+                "currentLevel": 89,
+                "totalPixelsPainted": 28945,
+                "title": "Domador de Coordenadas Avançado",
+                "experiencePoints": 28945,
+                "levelPhase": {
+                  "name": "Explorador",
+                  "color": "#4CAF50",
+                  "description": "Descobrindo o mundo"
+                }
+              },
+              {
+                "id": "550e8400-e29b-41d4-a716-446655440004",
+                "userId": "550e8400-e29b-41d4-a716-446655440005",
+                "username": "MapArtist",
+                "currentLevel": 76,
+                "totalPixelsPainted": 22156,
+                "title": "Senhor dos Paralelos Supremo",
+                "experiencePoints": 22156,
+                "levelPhase": {
+                  "name": "Explorador",
+                  "color": "#4CAF50",
+                  "description": "Descobrindo o mundo"
+                }
+              }
+            ],
+            "lastUpdated": "2025-08-13T10:00:00.000Z"
+          }
+        }
+      },
+      "getUserAchievements": {
+        "method": "GET",
+        "path": "/gamification/achievements",
+        "description": "Lista de conquistas desbloqueadas pelo usuário",
+        "auth": true,
+        "headers": {
+          "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+        },
+        "request": null,
+        "response": {
+          "success": true,
+          "data": {
+            "achievements": [
+              {
+                "id": "level_5",
+                "name": "Nível 5 Alcançado",
+                "description": "Chegou ao nível 5 - Viajante Curioso",
+                "unlockedAt": "2025-08-12T14:20:00.000Z",
+                "category": "level"
+              },
+              {
+                "id": "level_10",
+                "name": "Nível 10 Alcançado",
+                "description": "Chegou ao nível 10 - Navegador Urbano",
+                "unlockedAt": "2025-08-12T18:45:00.000Z",
+                "category": "level"
+              },
+              {
+                "id": "pixels_100",
+                "name": "100 Pixels",
+                "description": "Pintou 100 pixels no mapa",
+                "unlockedAt": "2025-08-12T16:20:00.000Z",
+                "category": "pixels"
+              },
+              {
+                "id": "pixels_500",
+                "name": "500 Pixels",
+                "description": "Pintou 500 pixels no mapa",
+                "unlockedAt": "2025-08-12T20:30:00.000Z",
+                "category": "pixels"
+              },
+              {
+                "id": "pixels_1000",
+                "name": "1.000 Pixels",
+                "description": "Pintou 1.000 pixels no mapa",
+                "unlockedAt": "2025-08-13T05:45:00.000Z",
+                "category": "pixels"
+              }
+            ],
+            "totalUnlocked": 5
+          }
+        }
+      },
+      "getLevelStatistics": {
+        "method": "GET",
+        "path": "/gamification/statistics",
+        "description": "Estatísticas gerais do sistema de níveis",
+        "auth": false,
+        "request": null,
+        "response": {
+          "success": true,
+          "data": {
+            "statistics": [
+              { "current_level": 1, "user_count": 1247 },
+              { "current_level": 2, "user_count": 892 },
+              { "current_level": 3, "user_count": 654 },
+              { "current_level": 4, "user_count": 445 },
+              { "current_level": 5, "user_count": 334 },
+              { "current_level": 6, "user_count": 256 },
+              { "current_level": 7, "user_count": 198 },
+              { "current_level": 8, "user_count": 147 },
+              { "current_level": 9, "user_count": 112 },
+              { "current_level": 10, "user_count": 89 },
+              { "current_level": 15, "user_count": 45 },
+              { "current_level": 20, "user_count": 23 },
+              { "current_level": 25, "user_count": 12 },
+              { "current_level": 30, "user_count": 7 },
+              { "current_level": 50, "user_count": 2 },
+              { "current_level": 75, "user_count": 1 }
+            ],
+            "totalLevels": 16
+          }
+        }
+      },
+      "recalculateAllLevels": {
+        "method": "POST",
+        "path": "/gamification/recalculate-levels",
+        "description": "Recalcular níveis de todos os usuários (endpoint administrativo)",
+        "auth": false,
+        "note": "Em produção, deve ter autenticação de admin",
+        "request": null,
+        "response": {
+          "success": true,
+          "message": "Recálculo de níveis concluído",
+          "data": {
+            "processed": 2547,
+            "successful": 2544,
+            "failed": 3,
+            "results": [
+              {
+                "userId": "550e8400-e29b-41d4-a716-446655440001",
+                "username": "testuser",
+                "success": true,
+                "level": 25,
+                "title": "Aventureiro Continental",
+                "totalPixels": 1500
+              },
+              {
+                "userId": "550e8400-e29b-41d4-a716-446655440002",
+                "username": "pixelartist",
+                "success": true,
+                "level": 45,
+                "title": "Mestre dos Territórios",
+                "totalPixels": 8950
+              }
+            ],
+            "summary": {
+              "totalUsers": 2547,
+              "processedSuccessfully": 2544,
+              "errors": 3,
+              "successRate": "99.9%"
+            }
+          }
+        }
+      },
+      "paintPixelWithLevelUp": {
+        "method": "POST",
+        "path": "/pixels/paint",
+        "description": "Exemplo de resposta quando pintar pixel resulta em level up",
+        "auth": true,
+        "headers": {
+          "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+        },
+        "request": {
+          "x": 1000,
+          "y": 500,
+          "color": "#FF0000"
+        },
+        "response": {
+          "success": true,
+          "message": "Pixel pintado com sucesso",
+          "data": {
+            "pixel": {
+              "id": "550e8400-e29b-41d4-a716-446655440000",
+              "x": 1000,
+              "y": 500,
+              "color": "#FF0000",
+              "userId": "550e8400-e29b-41d4-a716-446655440001",
+              "username": "testuser",
+              "createdAt": "2025-08-13T10:00:00.000Z"
+            }
+          },
+          "levelUp": {
+            "oldLevel": 24,
+            "newLevel": 25,
+            "newTitle": "Aventureiro Continental",
+            "levelsGained": 1,
+            "isSignificantLevelUp": true,
+            "phaseChanged": false
+          },
+          "progress": {
+            "level": 25,
+            "title": "Aventureiro Continental",
+            "progressPercentage": 1,
+            "pixelsUntilNextLevel": 799
+          }
+        }
+      }
+    },
+    "levelSystem": {
+      "description": "Sistema de progressão com 1000 níveis divididos em 5 fases temáticas",
+      "maxLevel": 1000,
+      "phases": [
+        {
+          "name": "Explorador",
+          "levels": "1-50",
+          "color": "#4CAF50",
+          "description": "Descobrindo o mundo",
+          "focus": "Aprendizado básico e primeiras descobertas"
+        },
+        {
+          "name": "Cartógrafo",
+          "levels": "51-150",
+          "color": "#2196F3",
+          "description": "Mapeando territórios",
+          "focus": "Desenvolvimento de habilidades de mapeamento"
+        },
+        {
+          "name": "Mestre",
+          "levels": "151-300",
+          "color": "#9C27B0",
+          "description": "Dominando a arte",
+          "focus": "Domínio avançado da pintura de pixels"
+        },
+        {
+          "name": "Lenda",
+          "levels": "301-600",
+          "color": "#FF9800",
+          "description": "Transcendendo limites",
+          "focus": "Conquistas épicas e feitos lendários"
+        },
+        {
+          "name": "Divindade",
+          "levels": "601-1000",
+          "color": "#F44336",
+          "description": "Poder absoluto",
+          "focus": "Transcendência total e poder supremo"
+        }
+      ],
+      "progressionFormula": {
+        "levels1to10": "Progressão linear suave (5, 15, 30, 50, 75, 105, 140, 180, 225, 275)",
+        "levels11to50": "Progressão quadrática moderada",
+        "levels51to200": "Progressão exponencial base 1.15",
+        "levels201to500": "Progressão exponencial base 1.12",
+        "levels501to1000": "Progressão exponencial base 1.08"
+      },
+      "estimatedProgression": {
+        "level10": "~275 pixels (~1 dia)",
+        "level25": "~1,500 pixels (~1 semana)",
+        "level50": "~15,000 pixels (~2 meses)",
+        "level100": "~150,000 pixels (~2 anos)",
+        "level500": "~10M pixels (~100+ anos)",
+        "level1000": "~1B+ pixels (gerações)"
+      }
+    },
+    "achievements": {
+      "categories": {
+        "level": "Conquistas por alcançar níveis específicos",
+        "pixels": "Conquistas por total de pixels pintados"
+      },
+      "levelMilestones": [5, 10, 15, 20, 25, 30, 40, 50, 60, 70, 80, 90, 100, 110, 120, 130, 140, 150, 175, 200, 225, 250, 275, 300, 325, 350, 375, 400, 450, 500, 550, 600, 650, 700, 750, 800, 850, 900, 950, 1000],
+      "pixelMilestones": [100, 500, 1000, 5000, 10000, 25000, 50000, 100000, 250000, 500000, 1000000]
+    },
+    "errorResponses": {
+      "unauthorized": {
+        "status": 401,
+        "body": {
+          "success": false,
+          "error": "Token de acesso requerido"
+        }
+      },
+      "userNotFound": {
+        "status": 404,
+        "body": {
+          "success": false,
+          "error": "Usuário não encontrado"
+        }
+      },
+      "invalidLevelRange": {
+        "status": 400,
+        "body": {
+          "success": false,
+          "error": "Limite inválido. Máximo 50 usuários no ranking"
+        }
+      },
+      "recalculationError": {
+        "status": 500,
+        "body": {
+          "success": false,
+          "error": "Falha no recálculo de níveis: Erro de conexão com banco de dados"
+        }
+      },
+      "rateLimit": {
+        "status": 429,
+        "body": {
+          "success": false,
+          "error": "Muitas requisições. Tente novamente em alguns minutos."
+        }
+      }
+    },
+    "rateLimits": {
+      "getUserLevel": "100 requisições por minuto por usuário",
+      "getUserStats": "50 requisições por minuto por usuário",
+      "getLeaderboard": "20 requisições por minuto por IP",
+      "getUserAchievements": "30 requisições por minuto por usuário",
+      "getLevelStatistics": "10 requisições por minuto por IP",
+      "recalculateAllLevels": "1 requisição por hora (apenas admin)"
+    },
+    "integration": {
+      "pixelPainting": {
+        "description": "Toda pintura de pixel automaticamente atualiza o progresso de gamificação",
+        "levelUpNotification": "API retorna informações de level up na resposta da pintura",
+        "fields": ["levelUp", "progress", "currentLevel"]
+      },
+      "autoInitialization": {
+        "description": "Níveis são automaticamente inicializados para novos usuários",
+        "trigger": "Primeira pintura de pixel ou primeira consulta de nível"
+      }
+    }
+  }
