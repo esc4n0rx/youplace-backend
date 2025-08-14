@@ -1,0 +1,28 @@
+{
+  channel: 'pixel_painted',
+  error: 'Reached the max retries per request limit (which is 3). Refer to "maxRetriesPerRequest" option for details.',
+  level: 'error',
+  message: 'Redis SUBSCRIBE error:',
+  timestamp: '2025-08-14 10:59:19'
+}
+{
+  channel: 'pixel_painted',
+  error: 'Reached the max retries per request limit (which is 3). Refer to "maxRetriesPerRequest" option for details.',
+  level: 'error',
+  message: 'Redis SUBSCRIBE error:',
+  timestamp: '2025-08-14 10:59:37'
+}
+{
+  channel: 'pixel_painted',
+  error: 'Command timed out',
+  level: 'error',
+  message: 'Redis SUBSCRIBE error:',
+  timestamp: '2025-08-14 11:01:02'
+}
+{
+  channel: 'pixel_painted',
+  error: 'Command timed out',
+  level: 'error',
+  message: 'Redis SUBSCRIBE error:',
+  timestamp: '2025-08-14 11:02:26'
+}

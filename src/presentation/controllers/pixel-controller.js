@@ -7,6 +7,11 @@ class PixelController {
   }
 
   paintPixel = async (req, res, next) => {
+    // ✨ NOVO: Injetar RealtimeService no PixelService
+    if (req.realtimeService && !this.pixelService.realtimeService) {
+      this.pixelService.setRealtimeService(req.realtimeService);
+    }
+
     // Aplicar monitoramento de performance e ação do usuário
     const performanceTimer = req.startPerformanceTimer ? req.startPerformanceTimer('pixel_validation') : null;
     await userActionMonitoring('paint_pixel')(req, res, () => {});

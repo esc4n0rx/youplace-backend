@@ -1,0 +1,747 @@
+IMPLEMENTAÇÃO DO WEBSOCKET NO FRONTEND NEXT.JS + TYPESCRIPT
+===========================================================
+
+ÍNDICE:
+1. Instalação e Configuração
+2. Tipos TypeScript
+3. Hook Customizado para WebSocket
+4. Context Provider
+5. Componente de Mapa
+6. Integração com Pintura de Pixels
+7. Otimizações e Boas Práticas
+8. Exemplo de Uso Completo
+
+===========================================================
+
+1. INSTALAÇÃO E CONFIGURAÇÃO
+===========================================================
+
+1.1. Instalar dependências:
+```bash
+npm install socket.io-client
+npm install --save-dev @types/socket.io-client
+1.2. Configurar variáveis de ambiente (.env.local):
+envNEXT_PUBLIC_API_URL=http://localhost:3001
+NEXT_PUBLIC_WS_URL=ws://localhost:3001
+===========================================================
+
+TIPOS TYPESCRIPT
+===========================================================
+
+2.1. Criar types/websocket.ts:
+typescriptexport interface PixelData {
+  x: number;
+  y: number;
+  color: string;
+  username: string;
+  timestamp: number;
+}
+
+export interface PixelsBatch {
+  type: 'pixels_batch';
+  room: string;
+  pixels: PixelData[];
+  count: number;
+  timestamp: number;
+}
+
+export interface RoomState {
+  roomId: string;
+  pixels: PixelData[];
+  timestamp: number;
+}
+
+export interface RoomInfo {
+  roomId: string;
+  coordinates: {
+    minX: number;
+    maxX: number;
+    minY: number;
+    maxY: number;
+    centerX: number;
+    centerY: number;
+  };
+  userCount: number;
+  stats: {
+    connectedUsers: number;
+    lastActivity: string;
+    pixelCount: number;
+  };
+  recentPixels: PixelData[];
+  timestamp: number;
+}
+
+export interface Viewport {
+  minX: number;
+  maxX: number;
+  minY: number;
+  maxY: number;
+}
+
+export interface WebSocketEvents {
+  // Client to Server
+  join_rooms: (data: { rooms: string[] }) => void;
+  leave_rooms: (data: { rooms: string[] }) => void;
+  update_viewport: (viewport: Viewport) => void;
+  get_room_info: (data: { roomId: string }) => void;
+
+  // Server to Client
+  connected: (data: ConnectionData) => void;
+  pixels_update: (data: PixelsBatch) => void;
+  room_state: (data: RoomState) => void;
+  room_users: (data: { roomId: string; userCount: number; timestamp: number }) => void;
+  rooms_joined: (data: { rooms: string[]; timestamp: number }) => void;
+  viewport_updated: (data: { viewport: Viewport; rooms: string[]; timestamp: number }) => void;
+  room_info: (data: RoomInfo) => void;
+  error: (data: { message: string }) => void;
+}
+
+export interface ConnectionData {
+  socketId: string;
+  user: {
+    id: string;
+    username: string;
+    role: string;
+    credits: number;
+    isGoogleUser: boolean;
+  };
+  timestamp: number;
+  serverInfo: {
+    version: string;
+    features: string[];
+  };
+}
+===========================================================
+
+HOOK CUSTOMIZADO PARA WEBSOCKET
+===========================================================
+
+3.1. Criar hooks/useWebSocket.ts:
+typescriptimport { useEffect, useRef, useState, useCallback } from 'react';
+import { io, Socket } from 'socket.io-client';
+import { WebSocketEvents, PixelsBatch, RoomState, Viewport } from '@/types/websocket';
+
+interface UseWebSocketProps {
+  token: string | null;
+  onPixelsUpdate?: (data: PixelsBatch) => void;
+  onRoomState?: (data: RoomState) => void;
+  onError?: (error: string) => void;
+}
+
+export const useWebSocket = ({ 
+  token, 
+  onPixelsUpdate, 
+  onRoomState, 
+  onError 
+}: UseWebSocketProps) => {
+  const [isConnected, setIsConnected] = useState(false);
+  const [connectionError, setConnectionError] = useState<string | null>(null);
+  const socketRef = useRef<Socket<WebSocketEvents> | null>(null);
+  const currentRoomsRef = useRef<string[]>([]);
+
+  // Conectar WebSocket
+  const connect = useCallback(() => {
+    if (!token || socketRef.current?.connected) return;
+
+    const socket = io(process.env.NEXT_PUBLIC_WS_URL!, {
+      auth: { token },
+      transports: ['websocket', 'polling'],
+      timeout: 10000,
+    });
+
+    socket.on('connect', () => {
+      setIsConnected(true);
+      setConnectionError(null);
+      console.log('🔌 WebSocket conectado');
+    });
+
+    socket.on('disconnect', (reason) => {
+      setIsConnected(false);
+      console.log('🔌 WebSocket desconectado:', reason);
+    });
+
+    socket.on('connect_error', (error) => {
+      setConnectionError(error.message);
+      onError?.(error.message);
+      console.error('❌ Erro de conexão WebSocket:', error);
+    });
+
+    socket.on('pixels_update', (data) => {
+      onPixelsUpdate?.(data);
+    });
+
+    socket.on('room_state', (data) => {
+      onRoomState?.(data);
+    });
+
+    socket.on('error', (data) => {
+      onError?.(data.message);
+    });
+
+    socketRef.current = socket;
+  }, [token, onPixelsUpdate, onRoomState, onError]);
+
+  // Desconectar WebSocket
+  const disconnect = useCallback(() => {
+    if (socketRef.current) {
+      socketRef.current.disconnect();
+      socketRef.current = null;
+      setIsConnected(false);
+    }
+  }, []);
+
+  // Calcular room ID baseado em coordenadas
+  const getRoomId = useCallback((x: number, y: number) => {
+    const roomX = Math.floor(x / 1000);
+    const roomY = Math.floor(y / 1000);
+    return `room_${roomX}_${roomY}`;
+  }, []);
+
+  // Calcular rooms necessários para viewport
+  const getRoomsForViewport = useCallback((viewport: Viewport) => {
+    const rooms: string[] = [];
+    const startRoomX = Math.floor(viewport.minX / 1000);
+    const endRoomX = Math.floor(viewport.maxX / 1000);
+    const startRoomY = Math.floor(viewport.minY / 1000);
+    const endRoomY = Math.floor(viewport.maxY / 1000);
+
+    for (let roomX = startRoomX; roomX <= endRoomX; roomX++) {
+      for (let roomY = startRoomY; roomY <= endRoomY; roomY++) {
+        rooms.push(`room_${roomX}_${roomY}`);
+      }
+    }
+
+    return rooms;
+  }, []);
+
+  // Atualizar viewport (auto join/leave rooms)
+  const updateViewport = useCallback((viewport: Viewport) => {
+    if (!socketRef.current?.connected) return;
+
+    const newRooms = getRoomsForViewport(viewport);
+    
+    // Otimização: só emitir se rooms mudaram
+    if (JSON.stringify(newRooms) !== JSON.stringify(currentRoomsRef.current)) {
+      socketRef.current.emit('update_viewport', viewport);
+      currentRoomsRef.current = newRooms;
+    }
+  }, [getRoomsForViewport]);
+
+  // Entrar em rooms específicos
+  const joinRooms = useCallback((rooms: string[]) => {
+    if (!socketRef.current?.connected) return;
+    socketRef.current.emit('join_rooms', { rooms });
+    currentRoomsRef.current = rooms;
+  }, []);
+
+  // Sair de rooms
+  const leaveRooms = useCallback((rooms: string[]) => {
+    if (!socketRef.current?.connected) return;
+    socketRef.current.emit('leave_rooms', { rooms });
+  }, []);
+
+  // Obter informações de um room
+  const getRoomInfo = useCallback((roomId: string) => {
+    if (!socketRef.current?.connected) return;
+    socketRef.current.emit('get_room_info', { roomId });
+  }, []);
+
+  // Effect para conectar automaticamente
+  useEffect(() => {
+    if (token) {
+      connect();
+    }
+
+    return () => {
+      disconnect();
+    };
+  }, [token, connect, disconnect]);
+
+  return {
+    isConnected,
+    connectionError,
+    connect,
+    disconnect,
+    updateViewport,
+    joinRooms,
+    leaveRooms,
+    getRoomInfo,
+    getRoomId,
+    getRoomsForViewport,
+    currentRooms: currentRoomsRef.current,
+  };
+};
+===========================================================
+
+CONTEXT PROVIDER
+===========================================================
+
+4.1. Criar contexts/WebSocketContext.tsx:
+typescript'use client';
+
+import React, { createContext, useContext, useState, useCallback } from 'react';
+import { useWebSocket } from '@/hooks/useWebSocket';
+import { PixelsBatch, RoomState, PixelData } from '@/types/websocket';
+
+interface WebSocketContextType {
+  isConnected: boolean;
+  connectionError: string | null;
+  realtimePixels: Map<string, PixelData>; // key: `${x},${y}`
+  updateViewport: (viewport: { minX: number; maxX: number; minY: number; maxY: number }) => void;
+  getRoomId: (x: number, y: number) => string;
+}
+
+const WebSocketContext = createContext<WebSocketContextType | null>(null);
+
+interface WebSocketProviderProps {
+  children: React.ReactNode;
+  token: string | null;
+}
+
+export const WebSocketProvider: React.FC<WebSocketProviderProps> = ({ 
+  children, 
+  token 
+}) => {
+  const [realtimePixels, setRealtimePixels] = useState<Map<string, PixelData>>(new Map());
+
+  // Callback para pixels em tempo real
+  const handlePixelsUpdate = useCallback((data: PixelsBatch) => {
+    setRealtimePixels(prev => {
+      const newMap = new Map(prev);
+      
+      data.pixels.forEach(pixel => {
+        const key = `${pixel.x},${pixel.y}`;
+        newMap.set(key, pixel);
+      });
+      
+      return newMap;
+    });
+
+    // Opcional: notificação visual
+    console.log(`🎨 Recebidos ${data.count} pixels no room ${data.room}`);
+  }, []);
+
+  // Callback para estado do room
+  const handleRoomState = useCallback((data: RoomState) => {
+    setRealtimePixels(prev => {
+      const newMap = new Map(prev);
+      
+      data.pixels.forEach(pixel => {
+        const key = `${pixel.x},${pixel.y}`;
+        newMap.set(key, pixel);
+      });
+      
+      return newMap;
+    });
+  }, []);
+
+  const handleError = useCallback((error: string) => {
+    console.error('WebSocket Error:', error);
+    // Opcional: mostrar toast de erro
+  }, []);
+
+  const {
+    isConnected,
+    connectionError,
+    updateViewport,
+    getRoomId,
+  } = useWebSocket({
+    token,
+    onPixelsUpdate: handlePixelsUpdate,
+    onRoomState: handleRoomState,
+    onError: handleError,
+  });
+
+  const value: WebSocketContextType = {
+    isConnected,
+    connectionError,
+    realtimePixels,
+    updateViewport,
+    getRoomId,
+  };
+
+  return (
+    <WebSocketContext.Provider value={value}>
+      {children}
+    </WebSocketContext.Provider>
+  );
+};
+
+export const useWebSocketContext = () => {
+  const context = useContext(WebSocketContext);
+  if (!context) {
+    throw new Error('useWebSocketContext deve ser usado dentro de WebSocketProvider');
+  }
+  return context;
+};
+===========================================================
+
+COMPONENTE DE MAPA
+===========================================================
+
+5.1. Exemplo de MapCanvas.tsx:
+typescript'use client';
+
+import React, { useEffect, useRef, useCallback, useState } from 'react';
+import { useWebSocketContext } from '@/contexts/WebSocketContext';
+
+interface MapCanvasProps {
+  width: number;
+  height: number;
+  zoom: number;
+  centerX: number;
+  centerY: number;
+  onPixelClick?: (x: number, y: number) => void;
+}
+
+export const MapCanvas: React.FC<MapCanvasProps> = ({
+  width,
+  height,
+  zoom,
+  centerX,
+  centerY,
+  onPixelClick,
+}) => {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const [viewport, setViewport] = useState({ minX: 0, maxX: 0, minY: 0, maxY: 0 });
+  
+  const { 
+    realtimePixels, 
+    updateViewport, 
+    isConnected 
+  } = useWebSocketContext();
+
+  // Calcular viewport baseado no zoom e centro
+  const calculateViewport = useCallback(() => {
+    const pixelsPerUnit = zoom;
+    const halfWidth = (width / 2) / pixelsPerUnit;
+    const halfHeight = (height / 2) / pixelsPerUnit;
+
+    const newViewport = {
+      minX: Math.floor(centerX - halfWidth),
+      maxX: Math.ceil(centerX + halfWidth),
+      minY: Math.floor(centerY - halfHeight),
+      maxY: Math.ceil(centerY + halfHeight),
+    };
+
+    setViewport(newViewport);
+    
+    // Atualizar WebSocket apenas se conectado
+    if (isConnected) {
+      updateViewport(newViewport);
+    }
+  }, [width, height, zoom, centerX, centerY, isConnected, updateViewport]);
+
+  // Recalcular viewport quando parâmetros mudarem
+  useEffect(() => {
+    calculateViewport();
+  }, [calculateViewport]);
+
+  // Renderizar pixels no canvas
+  const renderPixels = useCallback(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    // Limpar canvas
+    ctx.clearRect(0, 0, width, height);
+
+    // Renderizar pixels em tempo real
+    realtimePixels.forEach((pixel) => {
+      // Verificar se pixel está no viewport
+      if (
+        pixel.x >= viewport.minX &&
+        pixel.x <= viewport.maxX &&
+        pixel.y >= viewport.minY &&
+        pixel.y <= viewport.maxY
+      ) {
+        // Converter coordenadas do mundo para canvas
+        const canvasX = ((pixel.x - centerX) * zoom) + (width / 2);
+        const canvasY = ((pixel.y - centerY) * zoom) + (height / 2);
+
+        // Desenhar pixel
+        ctx.fillStyle = pixel.color;
+        ctx.fillRect(
+          Math.floor(canvasX), 
+          Math.floor(canvasY), 
+          Math.max(1, zoom), 
+          Math.max(1, zoom)
+        );
+      }
+    });
+  }, [realtimePixels, viewport, centerX, centerY, zoom, width, height]);
+
+  // Re-renderizar quando pixels mudarem
+  useEffect(() => {
+    renderPixels();
+  }, [renderPixels]);
+
+  // Handle click no canvas
+  const handleCanvasClick = useCallback((event: React.MouseEvent<HTMLCanvasElement>) => {
+    if (!onPixelClick) return;
+
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const rect = canvas.getBoundingClientRect();
+    const canvasX = event.clientX - rect.left;
+    const canvasY = event.clientY - rect.top;
+
+    // Converter coordenadas do canvas para mundo
+    const worldX = Math.floor(((canvasX - width / 2) / zoom) + centerX);
+    const worldY = Math.floor(((canvasY - height / 2) / zoom) + centerY);
+
+    onPixelClick(worldX, worldY);
+  }, [onPixelClick, width, height, zoom, centerX, centerY]);
+
+  return (
+    <div className="relative">
+      <canvas
+        ref={canvasRef}
+        width={width}
+        height={height}
+        onClick={handleCanvasClick}
+        className="border cursor-crosshair"
+        style={{ imageRendering: 'pixelated' }}
+      />
+      
+      {/* Indicador de conexão */}
+      <div className="absolute top-2 right-2">
+        <div 
+          className={`w-3 h-3 rounded-full ${
+            isConnected ? 'bg-green-500' : 'bg-red-500'
+          }`}
+          title={isConnected ? 'Conectado' : 'Desconectado'}
+        />
+      </div>
+    </div>
+  );
+};
+===========================================================
+
+INTEGRAÇÃO COM PINTURA DE PIXELS
+===========================================================
+
+6.1. Hook para pintar pixels (hooks/usePixelPainting.ts):
+typescriptimport { useState, useCallback } from 'react';
+import { useWebSocketContext } from '@/contexts/WebSocketContext';
+
+interface PaintPixelResponse {
+  success: boolean;
+  data?: any;
+  error?: string;
+}
+
+export const usePixelPainting = (token: string | null) => {
+  const [isPainting, setIsPainting] = useState(false);
+  const { getRoomId } = useWebSocketContext();
+
+  const paintPixel = useCallback(async (
+    x: number, 
+    y: number, 
+    color: string
+  ): Promise<PaintPixelResponse> => {
+    if (!token) {
+      return { success: false, error: 'Token não encontrado' };
+    }
+
+    setIsPainting(true);
+
+    try {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/pixels/paint`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({ x, y, color }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Erro ao pintar pixel');
+      }
+
+      // O pixel aparecerá automaticamente via WebSocket
+      // Não é necessário atualização manual do estado
+
+      return { success: true, data };
+    } catch (error) {
+      return { 
+        success: false, 
+        error: error instanceof Error ? error.message : 'Erro desconhecido' 
+      };
+    } finally {
+      setIsPainting(false);
+    }
+  }, [token]);
+
+  return {
+    paintPixel,
+    isPainting,
+  };
+};
+===========================================================
+
+OTIMIZAÇÕES E BOAS PRÁTICAS
+===========================================================
+
+7.1. Debounce para viewport updates:
+typescriptimport { useMemo } from 'react';
+import { debounce } from 'lodash';
+
+// No componente de mapa
+const debouncedUpdateViewport = useMemo(
+  () => debounce(updateViewport, 300),
+  [updateViewport]
+);
+7.2. Limpeza de pixels antigos:
+typescript// No WebSocketContext, limpar pixels que saíram do viewport
+const cleanupOldPixels = useCallback(() => {
+  setRealtimePixels(prev => {
+    const newMap = new Map();
+    const now = Date.now();
+    
+    prev.forEach((pixel, key) => {
+      // Manter apenas pixels dos últimos 5 minutos
+      if (now - pixel.timestamp < 5 * 60 * 1000) {
+        newMap.set(key, pixel);
+      }
+    });
+    
+    return newMap;
+  });
+}, []);
+
+// Executar limpeza a cada minuto
+useEffect(() => {
+  const interval = setInterval(cleanupOldPixels, 60000);
+  return () => clearInterval(interval);
+}, [cleanupOldPixels]);
+7.3. Gestão de memória:
+typescript// Limitar número máximo de pixels na memória
+const MAX_PIXELS_IN_MEMORY = 10000;
+
+const addPixelsToMap = useCallback((pixels: PixelData[]) => {
+  setRealtimePixels(prev => {
+    const newMap = new Map(prev);
+    
+    pixels.forEach(pixel => {
+      const key = `${pixel.x},${pixel.y}`;
+      newMap.set(key, pixel);
+    });
+    
+    // Se exceder limite, remover pixels mais antigos
+    if (newMap.size > MAX_PIXELS_IN_MEMORY) {
+      const sortedEntries = Array.from(newMap.entries())
+        .sort((a, b) => b[1].timestamp - a[1].timestamp);
+      
+      const limitedMap = new Map(
+        sortedEntries.slice(0, MAX_PIXELS_IN_MEMORY)
+      );
+      
+      return limitedMap;
+    }
+    
+    return newMap;
+  });
+}, []);
+===========================================================
+
+EXEMPLO DE USO COMPLETO
+===========================================================
+
+8.1. app/layout.tsx:
+typescriptimport { WebSocketProvider } from '@/contexts/WebSocketContext';
+
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  return (
+    <html lang="pt">
+      <body>
+        <AuthProvider>
+          {/* token vem do AuthContext */}
+          <WebSocketProvider token={userToken}>
+            {children}
+          </WebSocketProvider>
+        </AuthProvider>
+      </body>
+    </html>
+  );
+}
+8.2. Componente principal da página (app/map/page.tsx):
+typescript'use client';
+
+import React, { useState } from 'react';
+import { MapCanvas } from '@/components/MapCanvas';
+import { usePixelPainting } from '@/hooks/usePixelPainting';
+import { useAuth } from '@/contexts/AuthContext';
+
+export default function MapPage() {
+  const { token } = useAuth();
+  const { paintPixel, isPainting } = usePixelPainting(token);
+  const [selectedColor, setSelectedColor] = useState('#FF0000');
+  const [mapCenter, setMapCenter] = useState({ x: -466500, y: 235500 }); // São Paulo
+  const [zoom, setZoom] = useState(4);
+
+  const handlePixelClick = async (x: number, y: number) => {
+    if (isPainting) return;
+
+    const result = await paintPixel(x, y, selectedColor);
+    
+    if (!result.success) {
+      alert(`Erro: ${result.error}`);
+    }
+  };
+
+  return (
+    <div className="flex flex-col h-screen">
+      {/* Toolbar */}
+      <div className="flex items-center gap-4 p-4 bg-gray-100">
+        <input
+          type="color"
+          value={selectedColor}
+          onChange={(e) => setSelectedColor(e.target.value)}
+          className="w-12 h-12"
+        />
+        
+        <div className="flex gap-2">
+          <button
+            onClick={() => setZoom(zoom * 2)}
+            className="px-3 py-1 bg-blue-500 text-white rounded"
+          >
+            Zoom +
+          </button>
+          <button
+            onClick={() => setZoom(zoom / 2)}
+            className="px-3 py-1 bg-blue-500 text-white rounded"
+          >
+            Zoom -
+          </button>
+        </div>
+
+        {isPainting && (
+          <span className="text-blue-600">Pintando...</span>
+        )}
+      </div>
+
+      {/* Mapa */}
+      <div className="flex-1 flex items-center justify-center">
+        <MapCanvas
+          width={800}
+          height={600}
+          zoom={zoom}
+          centerX={mapCenter.x}
+          centerY={mapCenter.y}
+          onPixelClick={handlePixelClick}
+        />
+      </div>
+    </div>
+  );
+}

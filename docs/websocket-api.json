@@ -1,0 +1,301 @@
+{
+    "baseUrl": "ws://localhost:3001",
+    "description": "API WebSocket do YouPlace para pintura em tempo real",
+    "version": "1.0.0",
+    "transport": "Socket.io",
+    "authentication": {
+      "type": "JWT Token",
+      "methods": [
+        "handshake.auth.token",
+        "handshake.headers.authorization"
+      ],
+      "example": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+    },
+    "connection": {
+      "url": "ws://localhost:3001",
+      "namespace": "/",
+      "transports": ["websocket", "polling"],
+      "pingTimeout": 60000,
+      "pingInterval": 25000
+    },
+    "events": {
+      "client_to_server": {
+        "join_rooms": {
+          "description": "Entrar em rooms específicos para receber atualizações",
+          "payload": {
+            "rooms": ["room_-467_235", "room_-467_236"]
+          },
+          "validation": {
+            "rooms": "Array de strings, máximo 50 rooms",
+            "roomFormat": "^room_-?\\d+_-?\\d+$"
+          },
+          "response": "rooms_joined",
+          "errors": ["Invalid rooms data", "Too many rooms", "Some rooms are invalid"]
+        },
+        "leave_rooms": {
+          "description": "Sair de rooms específicos",
+          "payload": {
+            "rooms": ["room_-467_235"]
+          },
+          "response": "rooms_left"
+        },
+        "update_viewport": {
+          "description": "Atualizar viewport do usuário (auto-join/leave rooms)",
+          "payload": {
+            "minX": -467000,
+            "maxX": -466000,
+            "minY": 235000,
+            "maxY": 236000
+          },
+          "validation": {
+            "maxSize": "10000x10000 pixels",
+            "coordinates": "Números inteiros válidos"
+          },
+          "response": "viewport_updated"
+        },
+        "get_room_info": {
+          "description": "Obter informações detalhadas de um room",
+          "payload": {
+            "roomId": "room_-467_235"
+          },
+          "response": "room_info"
+        }
+      },
+      "server_to_client": {
+        "connected": {
+          "description": "Confirmação de conexão estabelecida",
+          "payload": {
+            "socketId": "abc123",
+            "user": {
+              "id": "user-uuid",
+              "username": "player123",
+              "role": "user",
+              "credits": 1000,
+              "isGoogleUser": false
+            },
+            "timestamp": 1692025200000,
+            "serverInfo": {
+              "version": "1.0.0",
+              "features": ["realtime_pixels", "room_management", "batching"]
+            }
+          }
+        },
+        "pixels_update": {
+          "description": "Batch de pixels pintados em tempo real",
+          "payload": {
+            "type": "pixels_batch",
+            "room": "room_-467_235",
+            "pixels": [
+              {
+                "x": -467001,
+                "y": 235003,
+                "color": "#FF0000",
+                "username": "player1",
+                "timestamp": 1692025200000
+              },
+              {
+                "x": -467002,
+                "y": 235003,
+                "color": "#00FF00", 
+                "username": "player2",
+                "timestamp": 1692025200100
+              }
+            ],
+            "count": 2,
+            "timestamp": 1692025200000
+          },
+          "frequency": "Máximo a cada 500ms por room",
+          "batchSize": "Até 50 pixels por batch"
+        },
+        "room_state": {
+          "description": "Estado atual de um room (últimos pixels)",
+          "payload": {
+            "roomId": "room_-467_235",
+            "pixels": [
+              {
+                "x": -467001,
+                "y": 235003,
+                "color": "#FF0000",
+                "username": "player1",
+                "timestamp": 1692025200000
+              }
+            ],
+            "timestamp": 1692025200000
+          },
+          "trigger": "Ao entrar em um room"
+        },
+        "room_users": {
+          "description": "Contagem de usuários conectados ao room",
+          "payload": {
+            "roomId": "room_-467_235",
+            "userCount": 15,
+            "timestamp": 1692025200000
+          },
+          "trigger": "Quando usuários entram/saem do room"
+        },
+        "rooms_joined": {
+          "description": "Confirmação de entrada em rooms",
+          "payload": {
+            "rooms": ["room_-467_235", "room_-467_236"],
+            "timestamp": 1692025200000
+          }
+        },
+        "rooms_left": {
+          "description": "Confirmação de saída de rooms",
+          "payload": {
+            "rooms": ["room_-467_235"],
+            "timestamp": 1692025200000
+          }
+        },
+        "viewport_updated": {
+          "description": "Confirmação de atualização de viewport",
+          "payload": {
+            "viewport": {
+              "minX": -467000,
+              "maxX": -466000,
+              "minY": 235000,
+              "maxY": 236000
+            },
+            "rooms": ["room_-467_235", "room_-467_236"],
+            "timestamp": 1692025200000
+          }
+        },
+        "room_info": {
+          "description": "Informações detalhadas de um room",
+          "payload": {
+            "roomId": "room_-467_235",
+            "coordinates": {
+              "minX": -467000,
+              "maxX": -466001,
+              "minY": 235000,
+              "maxY": 235999,
+              "centerX": -466500,
+              "centerY": 235500
+            },
+            "userCount": 15,
+            "stats": {
+              "connectedUsers": 15,
+              "lastActivity": "2025-08-14T10:30:00.000Z",
+              "pixelCount": 1250
+            },
+            "recentPixels": [],
+            "timestamp": 1692025200000
+          }
+        },
+        "special_event": {
+          "description": "Eventos especiais (admin broadcasts, etc)",
+          "payload": {
+            "type": "maintenance_warning",
+            "data": {
+              "message": "Manutenção programada em 10 minutos",
+              "duration": "30 minutos"
+            },
+            "timestamp": 1692025200000
+          }
+        },
+        "connection_stats": {
+          "description": "Estatísticas de conexão",
+          "payload": {
+            "totalConnections": 1547,
+            "activeRooms": 23
+          }
+        },
+        "error": {
+          "description": "Erro do servidor",
+          "payload": {
+            "message": "Invalid rooms data"
+          }
+        }
+      }
+    },
+    "roomSystem": {
+      "concept": "Divisão geográfica automática em rooms de 1000x1000 pixels (~11km²)",
+      "roomSize": "1000x1000 pixels",
+      "realWorldSize": "~11km x 10-11km (varia com latitude)",
+      "roomIdFormat": "room_{roomX}_{roomY}",
+      "calculation": {
+        "roomX": "Math.floor(x / 1000)",
+        "roomY": "Math.floor(y / 1000)"
+      },
+      "examples": {
+        "sao_paulo": {
+          "coordinates": "(-23.5505, -46.6333)",
+          "pixels": "(-466333, 235505)",
+          "roomId": "room_-467_235",
+          "coverage": "Grande São Paulo (~112 km²)"
+        },
+        "rio_janeiro": {
+          "coordinates": "(-22.9068, -43.1729)",
+          "pixels": "(-431729, 229068)",
+          "roomId": "room_-432_229",
+          "coverage": "Zona Sul + Centro + Zona Norte"
+        }
+      }
+    },
+    "batchingSystem": {
+      "purpose": "Otimizar tráfego de rede agrupando múltiplos pixels",
+      "timeout": "500ms (configurável)",
+      "maxSize": "50 pixels por batch",
+      "behavior": {
+        "autoFlush": "Flush automático após timeout",
+        "immediateFlush": "Flush imediato ao atingir tamanho máximo",
+        "roomBased": "Batches separados por room"
+      },
+      "optimization": "Reduz ~90% do tráfego vs broadcast individual"
+    },
+    "rateLimiting": {
+      "connection": "100 eventos por minuto por usuário",
+      "roomJoins": "Máximo 50 rooms simultaneamente",
+      "viewportUpdates": "Sem limite específico (rate limit geral)",
+      "roomInfoRequests": "Rate limit geral aplicado"
+    },
+    "clientIntegration": {
+      "installation": "npm install socket.io-client",
+      "basicUsage": {
+        "connect": {
+          "code": "const io = require('socket.io-client');\nconst socket = io('ws://localhost:3001', {\n  auth: {\n    token: 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...'\n  }\n});"
+        },
+        "joinRooms": {
+          "code": "socket.emit('join_rooms', {\n  rooms: ['room_-467_235', 'room_-467_236']\n});"
+        },
+        "listenPixels": {
+          "code": "socket.on('pixels_update', (data) => {\n  console.log(`Received ${data.count} pixels for room ${data.room}`);\n  data.pixels.forEach(pixel => {\n    // Atualizar pixel no canvas/mapa\n    updatePixelOnMap(pixel.x, pixel.y, pixel.color);\n  });\n});"
+        },
+        "updateViewport": {
+          "code": "socket.emit('update_viewport', {\n  minX: -467000,\n  maxX: -466000,\n  minY: 235000,\n  maxY: 236000\n});"
+        }
+      }
+    },
+    "errorHandling": {
+      "connectionErrors": {
+        "authRequired": "Authentication required",
+        "invalidToken": "Invalid or expired token",
+        "userNotFound": "User not found",
+        "accountSuspended": "Account suspended"
+      },
+      "operationErrors": {
+        "invalidRooms": "Some rooms are invalid",
+        "tooManyRooms": "Too many rooms (max: 50)",
+        "viewportTooLarge": "Viewport too large (max: 10000x10000 pixels)",
+        "rateLimitExceeded": "Rate limit exceeded"
+      },
+      "clientHandling": {
+        "reconnection": "Socket.io handle automaticamente",
+        "errorEvents": "Escutar evento 'error' para tratar erros",
+        "disconnection": "Implementar lógica de reconexão se necessário"
+      }
+    },
+    "performanceNotes": {
+      "memoryUsage": "~50MB por 1000 usuários online",
+      "latency": "< 100ms do pixel ao broadcast",
+      "throughput": "10,000+ pixels/segundo",
+      "scalability": "Horizontal via Redis PubSub",
+      "optimization": "Batching reduz 90% do tráfego vs individual"
+    },
+    "monitoringEndpoints": {
+      "status": "GET /api/v1/realtime/status",
+      "activeRooms": "GET /api/v1/realtime/rooms/active",
+      "roomState": "GET /api/v1/realtime/rooms/{roomId}/state",
+      "systemStats": "GET /api/v1/realtime/admin/stats (admin only)"
+    }
+  }

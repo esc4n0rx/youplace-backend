@@ -11,6 +11,12 @@ class PixelService {
     this.antiBotService = new AntiBotService();
     this.coordinateSystem = new CoordinateSystem();
     this.gamificationService = new GamificationService();
+    this.realtimeService = null; // Será injetado
+  }
+
+  // Método para injetar RealtimeService
+  setRealtimeService(realtimeService) {
+    this.realtimeService = realtimeService;
   }
 
   async paintPixel(userId, x, y, color, userCreatedAt = null) {
@@ -65,6 +71,17 @@ class PixelService {
         console.log(`🎉 Level Up! Usuário ${userId}: ${gamificationResult.levelUp.oldLevel} → ${gamificationResult.levelUp.newLevel} (${gamificationResult.levelUp.newTitle})`);
       }
 
+      // ✨ NOVO: Broadcast em tempo real
+      if (this.realtimeService) {
+        await this.realtimeService.broadcastPixelPainted({
+          x: pixel.x,
+          y: pixel.y,
+          color: pixel.color,
+          username: pixel.username,
+          userId: pixel.userId,
+          timestamp: pixel.createdAt
+        });
+      }
 
       // Log para análise se risk score alto
       if (antiBotResult.riskScore > 50) {
@@ -76,7 +93,7 @@ class PixelService {
         riskScore: antiBotResult.riskScore,
         warnings: antiBotResult.warnings,
         geoCoordinates: this.coordinateSystem.pixelToGeo(x, y),
-        // NOVO: Informações de gamificação
+        // Informações de gamificação
         levelUp: gamificationResult.levelUp,
         currentLevel: gamificationResult.userLevel.currentLevel,
         progress: {
@@ -115,6 +132,18 @@ class PixelService {
 
         // Atualizar gamificação mesmo em fallback
         const gamificationResult = await this.gamificationService.updatePixelProgress(userId, 1);
+
+        // ✨ NOVO: Broadcast em tempo real (mesmo em fallback)
+        if (this.realtimeService) {
+          await this.realtimeService.broadcastPixelPainted({
+            x: pixel.x,
+            y: pixel.y,
+            color: pixel.color,
+            username: pixel.username,
+            userId: pixel.userId,
+            timestamp: pixel.createdAt
+          });
+        }
 
         return {
           pixel,

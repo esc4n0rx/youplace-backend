@@ -28,6 +28,20 @@ module.exports = {
     client_x509_cert_url: process.env.FIREBASE_CLIENT_X509_CERT_URL
   },
 
+  redis: {
+    host: process.env.REDIS_HOST || 'localhost',
+    port: process.env.REDIS_PORT || 6379,
+    password: process.env.REDIS_PASSWORD || undefined,
+    db: process.env.REDIS_DB || 0
+  },
+
+  websocket: {
+    pingTimeout: parseInt(process.env.WS_PING_TIMEOUT) || 60000,
+    pingInterval: parseInt(process.env.WS_PING_INTERVAL) || 25000,
+    batchTimeout: parseInt(process.env.WS_BATCH_TIMEOUT) || 500,
+    maxBatchSize: parseInt(process.env.WS_MAX_BATCH_SIZE) || 50
+  },
+
   rateLimiting: {
     windowMs: parseInt(process.env.RATE_LIMIT_WINDOW_MS) || 900000, // 15 minutes
     maxRequests: parseInt(process.env.RATE_LIMIT_MAX_REQUESTS) || 100

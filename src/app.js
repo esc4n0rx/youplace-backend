@@ -9,7 +9,8 @@ const pixelRoutes = require('./presentation/routes/pixel-routes');
 const creditRoutes = require('./presentation/routes/credit-routes');
 const gamificationRoutes = require('./presentation/routes/gamification-routes');
 const monitoringRoutes = require('./presentation/routes/monitoring-routes');
-const adminRoutes = require('./presentation/routes/admin-routes'); // NOVO
+const adminRoutes = require('./presentation/routes/admin-routes');
+const realtimeRoutes = require('./presentation/routes/realtime-routes'); // NOVO
 const { errorHandler, notFoundHandler } = require('./presentation/middlewares/error-middleware');
 const { 
   morganMiddleware, 
@@ -22,7 +23,7 @@ const {
   rateLimitMonitoring,
   resourceMonitoring 
 } = require('./presentation/middlewares/monitoring-middleware');
-const { checkIpBan, checkUserBan } = require('./presentation/middlewares/admin-middleware'); // NOVO
+const { checkIpBan, checkUserBan } = require('./presentation/middlewares/admin-middleware');
 const DailyBonusJob = require('./jobs/daily-bonus-job');
 
 const app = express();
@@ -63,15 +64,25 @@ app.use(rateLimitMonitoring); // Monitoramento de rate limit
 app.use(resourceMonitoring); // Monitoramento de recursos
 app.use(securityLogging); // Detecção de atividades suspeitas
 
-// === MIDDLEWARES DE BANIMENTO (NOVO) ===
+// === MIDDLEWARES DE BANIMENTO ===
 app.use(checkIpBan); // Verificar banimento de IP em todas as rotas
 
 // Parsing de JSON
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
+// ✨ NOVO: Middleware para injetar RealtimeService nos controllers
+app.use((req, res, next) => {
+  req.realtimeService = app.locals.realtimeService;
+  next();
+});
+
 // Health check
 app.get('/health', (req, res) => {
+  const realtimeStats = req.realtimeService ? 
+    req.realtimeService.getSystemStats() : 
+    { error: 'RealtimeService not available' };
+
   res.status(200).json({
     success: true,
     message: 'YouPlace Backend is running',
@@ -80,17 +91,19 @@ app.get('/health', (req, res) => {
       dailyBonus: 'active'
     },
     version: '1.0.0',
-    uptime: process.uptime()
+    uptime: process.uptime(),
+    realtime: realtimeStats
   });
 });
 
 // Rotas da API
 app.use('/api/v1/auth', authRoutes);
-app.use('/api/v1/pixels', checkUserBan, pixelRoutes); // NOVO: verificar ban em routes autenticadas
-app.use('/api/v1/credits', checkUserBan, creditRoutes); // NOVO: verificar ban em routes autenticadas
-app.use('/api/v1/gamification', checkUserBan, gamificationRoutes); // NOVO: verificar ban em routes autenticadas
+app.use('/api/v1/pixels', checkUserBan, pixelRoutes);
+app.use('/api/v1/credits', checkUserBan, creditRoutes);
+app.use('/api/v1/gamification', checkUserBan, gamificationRoutes);
 app.use('/api/v1/monitoring', monitoringRoutes);
-app.use('/api/v1/admin', adminRoutes); // NOVO: rotas administrativas
+app.use('/api/v1/admin', adminRoutes);
+app.use('/api/v1/realtime', realtimeRoutes); // NOVO: rotas de tempo real
 
 // Middleware de erro de logging ANTES do handler de erro
 app.use(errorLogging);
