@@ -8,19 +8,21 @@ const authRoutes = require('./presentation/routes/auth-routes');
 const pixelRoutes = require('./presentation/routes/pixel-routes');
 const creditRoutes = require('./presentation/routes/credit-routes');
 const gamificationRoutes = require('./presentation/routes/gamification-routes');
-const monitoringRoutes = require('./presentation/routes/monitoring-routes'); // NOVO
+const monitoringRoutes = require('./presentation/routes/monitoring-routes');
+const adminRoutes = require('./presentation/routes/admin-routes'); // NOVO
 const { errorHandler, notFoundHandler } = require('./presentation/middlewares/error-middleware');
 const { 
   morganMiddleware, 
   structuredLogging, 
   errorLogging, 
   securityLogging 
-} = require('./presentation/middlewares/logging-middleware'); // NOVO
+} = require('./presentation/middlewares/logging-middleware');
 const { 
   requestMonitoring, 
   rateLimitMonitoring,
   resourceMonitoring 
-} = require('./presentation/middlewares/monitoring-middleware'); // NOVO
+} = require('./presentation/middlewares/monitoring-middleware');
+const { checkIpBan, checkUserBan } = require('./presentation/middlewares/admin-middleware'); // NOVO
 const DailyBonusJob = require('./jobs/daily-bonus-job');
 
 const app = express();
@@ -61,6 +63,9 @@ app.use(rateLimitMonitoring); // Monitoramento de rate limit
 app.use(resourceMonitoring); // Monitoramento de recursos
 app.use(securityLogging); // Detecção de atividades suspeitas
 
+// === MIDDLEWARES DE BANIMENTO (NOVO) ===
+app.use(checkIpBan); // Verificar banimento de IP em todas as rotas
+
 // Parsing de JSON
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
@@ -81,10 +86,11 @@ app.get('/health', (req, res) => {
 
 // Rotas da API
 app.use('/api/v1/auth', authRoutes);
-app.use('/api/v1/pixels', pixelRoutes);
-app.use('/api/v1/credits', creditRoutes);
-app.use('/api/v1/gamification', gamificationRoutes);
-app.use('/api/v1/monitoring', monitoringRoutes); // NOVO
+app.use('/api/v1/pixels', checkUserBan, pixelRoutes); // NOVO: verificar ban em routes autenticadas
+app.use('/api/v1/credits', checkUserBan, creditRoutes); // NOVO: verificar ban em routes autenticadas
+app.use('/api/v1/gamification', checkUserBan, gamificationRoutes); // NOVO: verificar ban em routes autenticadas
+app.use('/api/v1/monitoring', monitoringRoutes);
+app.use('/api/v1/admin', adminRoutes); // NOVO: rotas administrativas
 
 // Middleware de erro de logging ANTES do handler de erro
 app.use(errorLogging);

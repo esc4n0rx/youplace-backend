@@ -1,0 +1,671 @@
+{
+    "baseUrl": "http://localhost:3001/api/v1",
+    "description": "API Administrativa do YouPlace - Gerenciamento completo de usuários, banimentos e sistema",
+    "version": "1.0.0",
+    "authentication": {
+      "type": "Bearer Token (JWT)",
+      "header": "Authorization: Bearer {token}",
+      "requirements": "Role 'admin' obrigatória para todas as rotas"
+    },
+    "rateLimits": {
+      "general": "30 requisições por minuto",
+      "critical": "10 ações críticas por minuto (ban, unban, suspend)",
+      "reports": "5 relatórios por minuto"
+    },
+    "routes": {
+      "getDashboard": {
+        "method": "GET",
+        "path": "/admin/dashboard",
+        "description": "Dashboard principal com estatísticas e resumo do sistema",
+        "auth": true,
+        "admin": true,
+        "rateLimit": "30/min",
+        "request": null,
+        "response": {
+          "success": true,
+          "data": {
+            "stats": {
+              "users": {
+                "total": 2547,
+                "active": 2344,
+                "banned": 15,
+                "suspended": 3
+              },
+              "actions": {
+                "total": 127
+              }
+            },
+            "recentActions": [
+              {
+                "id": "550e8400-e29b-41d4-a716-446655440000",
+                "adminId": "admin-uuid",
+                "targetUserId": "user-uuid",
+                "action": "ban",
+                "reason": "Spam excessivo",
+                "metadata": {
+                  "duration": null,
+                  "userRegistrationIp": "192.168.1.100",
+                  "userEmail": "spammer@example.com"
+                },
+                "createdAt": "2025-08-14T10:30:00.000Z",
+                "adminUsername": "admin_user",
+                "targetUsername": "banned_user"
+              }
+            ]
+          }
+        }
+      },
+      "getUsers": {
+        "method": "GET",
+        "path": "/admin/users",
+        "description": "Listar usuários com filtros e paginação",
+        "auth": true,
+        "admin": true,
+        "rateLimit": "30/min",
+        "queryParams": {
+          "page": "Página (padrão: 1)",
+          "limit": "Itens por página (padrão: 50, máximo: 100)",
+          "role": "Filtrar por role (user, admin)",
+          "isActive": "Filtrar por status (true, false)",
+          "search": "Buscar por username ou email (mín: 2 chars)"
+        },
+        "examples": {
+          "listAll": "/admin/users?page=1&limit=20",
+          "filterBanned": "/admin/users?isActive=false",
+          "searchUser": "/admin/users?search=john&page=1",
+          "filterAdmins": "/admin/users?role=admin"
+        },
+        "response": {
+          "success": true,
+          "data": {
+            "users": [
+              {
+                "id": "550e8400-e29b-41d4-a716-446655440000",
+                "username": "player123",
+                "email": "player@example.com",
+                "credits": 1250,
+                "isGoogleUser": false,
+                "role": "user",
+                "isActive": true,
+                "registrationIp": "192.168.1.50",
+                "createdAt": "2025-08-10T14:20:00.000Z",
+                "updatedAt": "2025-08-14T09:15:00.000Z"
+              }
+            ],
+            "pagination": {
+              "page": 1,
+              "limit": 50,
+              "totalCount": 2547,
+              "totalPages": 51,
+              "hasNext": true,
+              "hasPrev": false
+            }
+          }
+        }
+      },
+      "getUserDetails": {
+        "method": "GET", 
+        "path": "/admin/users/{userId}",
+        "description": "Detalhes completos de um usuário específico",
+        "auth": true,
+        "admin": true,
+        "rateLimit": "30/min",
+        "pathParams": {
+          "userId": "UUID do usuário"
+        },
+        "response": {
+          "success": true,
+          "data": {
+            "user": {
+              "id": "550e8400-e29b-41d4-a716-446655440000",
+              "username": "player123",
+              "email": "player@example.com",
+              "credits": 1250,
+              "isGoogleUser": false,
+              "role": "user",
+              "isActive": true,
+              "registrationIp": "192.168.1.50",
+              "createdAt": "2025-08-10T14:20:00.000Z",
+              "updatedAt": "2025-08-14T09:15:00.000Z"
+            },
+            "banHistory": [
+              {
+                "id": "ban-uuid",
+                "userId": "550e8400-e29b-41d4-a716-446655440000",
+                "adminId": "admin-uuid",
+                "reason": "Comportamento inadequado",
+                "type": "suspend",
+                "isActive": false,
+                "expiresAt": "2025-08-13T10:00:00.000Z",
+                "createdAt": "2025-08-12T10:00:00.000Z",
+                "updatedAt": "2025-08-13T10:01:00.000Z",
+                "adminUsername": "moderator1"
+              }
+            ],
+            "activeBan": null
+          }
+        }
+      },
+      "banUser": {
+        "method": "POST",
+        "path": "/admin/users/{userId}/ban",
+        "description": "Banir usuário permanentemente",
+        "auth": true,
+        "admin": true,
+        "rateLimit": "10/min (crítico)",
+        "audit": true,
+        "pathParams": {
+          "userId": "UUID do usuário a ser banido"
+        },
+        "request": {
+          "reason": "Violação grave dos termos de uso - spam massivo",
+          "type": "ban"
+        },
+        "validation": {
+          "reason": "String, 10-500 caracteres, obrigatório",
+          "type": "Enum ['ban'], opcional (padrão: 'ban')"
+        },
+        "response": {
+          "success": true,
+          "message": "Usuário banido com sucesso",
+          "data": {
+            "id": "ban-uuid",
+            "userId": "550e8400-e29b-41d4-a716-446655440000",
+            "adminId": "admin-uuid",
+            "reason": "Violação grave dos termos de uso - spam massivo",
+            "type": "ban",
+            "isActive": true,
+            "expiresAt": null,
+            "createdAt": "2025-08-14T10:30:00.000Z",
+            "updatedAt": "2025-08-14T10:30:00.000Z"
+          }
+        }
+      },
+      "suspendUser": {
+        "method": "POST",
+        "path": "/admin/users/{userId}/suspend",
+        "description": "Suspender usuário temporariamente",
+        "auth": true,
+        "admin": true,
+        "rateLimit": "10/min (crítico)",
+        "audit": true,
+        "pathParams": {
+          "userId": "UUID do usuário a ser suspenso"
+        },
+        "request": {
+          "reason": "Comportamento inadequado no chat",
+          "duration": 72
+        },
+        "validation": {
+          "reason": "String, 10-500 caracteres, obrigatório",
+          "duration": "Integer, 1-8760 horas, opcional (padrão: 24h)"
+        },
+        "response": {
+          "success": true,
+          "message": "Usuário suspenso com sucesso",
+          "data": {
+            "id": "suspend-uuid",
+            "userId": "550e8400-e29b-41d4-a716-446655440000",
+            "adminId": "admin-uuid",
+            "reason": "Comportamento inadequado no chat",
+            "type": "suspend",
+            "isActive": true,
+            "expiresAt": "2025-08-17T10:30:00.000Z",
+            "createdAt": "2025-08-14T10:30:00.000Z",
+            "updatedAt": "2025-08-14T10:30:00.000Z"
+          }
+        }
+      },
+      "unbanUser": {
+        "method": "POST",
+        "path": "/admin/users/{userId}/unban",
+        "description": "Remover banimento ou suspensão de usuário",
+        "auth": true,
+        "admin": true,
+        "rateLimit": "10/min (crítico)",
+        "audit": true,
+        "pathParams": {
+          "userId": "UUID do usuário a ser desbanido"
+        },
+        "request": {
+          "reason": "Revisão do caso - punição excessiva"
+        },
+        "validation": {
+          "reason": "String, 5-500 caracteres, obrigatório"
+        },
+        "response": {
+          "success": true,
+          "message": "Usuário desbanido com sucesso"
+        }
+      },
+      "adjustCredits": {
+        "method": "POST",
+        "path": "/admin/users/{userId}/credits",
+        "description": "Ajustar créditos do usuário (adicionar ou remover)",
+        "auth": true,
+        "admin": true,
+        "rateLimit": "30/min",
+        "audit": true,
+        "pathParams": {
+          "userId": "UUID do usuário"
+        },
+        "request": {
+          "amount": 1000,
+          "reason": "Bônus especial por contribuição à comunidade"
+        },
+        "validation": {
+          "amount": "Integer, -100000 a 100000, não pode ser 0, obrigatório",
+          "reason": "String, 10-500 caracteres, obrigatório"
+        },
+        "examples": {
+          "addCredits": {
+            "amount": 1000,
+            "reason": "Bônus de evento especial"
+          },
+          "removeCredits": {
+            "amount": -500,
+            "reason": "Penalidade por uso inadequado"
+          }
+        },
+        "response": {
+          "success": true,
+          "message": "Créditos adicionados com sucesso",
+          "data": {
+            "amount": 1000,
+            "newCredits": 2250
+          }
+        }
+      },
+      "getAdminActions": {
+        "method": "GET",
+        "path": "/admin/actions",
+        "description": "Histórico de ações administrativas com filtros",
+        "auth": true,
+        "admin": true,
+        "rateLimit": "30/min",
+        "queryParams": {
+          "page": "Página (padrão: 1)",
+          "limit": "Itens por página (padrão: 50)",
+          "adminId": "Filtrar por admin específico",
+          "targetUserId": "Filtrar por usuário alvo",
+          "action": "Filtrar por tipo de ação"
+        },
+        "examples": {
+          "allActions": "/admin/actions?page=1&limit=20",
+          "myActions": "/admin/actions?adminId=admin-uuid",
+          "banActions": "/admin/actions?action=ban",
+          "userActions": "/admin/actions?targetUserId=user-uuid"
+        },
+        "response": {
+          "success": true,
+          "data": {
+            "actions": [
+              {
+                "id": "action-uuid",
+                "adminId": "admin-uuid",
+                "targetUserId": "user-uuid",
+                "action": "ban",
+                "reason": "Spam excessivo",
+                "metadata": {
+                  "duration": null,
+                  "userRegistrationIp": "192.168.1.100",
+                  "userEmail": "spammer@example.com"
+                },
+                "createdAt": "2025-08-14T10:30:00.000Z",
+                "adminUsername": "admin_user",
+                "targetUsername": "banned_user"
+              }
+            ],
+            "pagination": {
+              "page": 1,
+              "limit": 50,
+              "hasNext": true,
+              "hasPrev": false
+            }
+          }
+        }
+      },
+      "generateUserReport": {
+        "method": "GET",
+        "path": "/admin/reports/users",
+        "description": "Gerar relatório de usuários em JSON ou CSV",
+        "auth": true,
+        "admin": true,
+        "rateLimit": "5/min",
+        "queryParams": {
+          "format": "Formato do relatório (json, csv)",
+          "timeframe": "Período do relatório (7d, 30d, 90d)"
+        },
+        "examples": {
+          "jsonReport": "/admin/reports/users?format=json&timeframe=30d",
+          "csvExport": "/admin/reports/users?format=csv&timeframe=7d"
+        },
+        "response": {
+          "success": true,
+          "data": {
+            "generatedAt": "2025-08-14T10:30:00.000Z",
+            "generatedBy": "admin_user",
+            "timeframe": "30d",
+            "summary": {
+              "totalActiveUsers": 2344,
+              "totalBannedUsers": 15,
+              "totalSuspendedUsers": 3,
+              "totalAdminActions": 127
+            },
+            "details": {
+              "recentActions": [
+                {
+                  "createdAt": "2025-08-14T10:30:00.000Z",
+                  "adminUsername": "admin_user",
+                  "action": "ban",
+                  "targetUsername": "spammer123",
+                  "reason": "Spam excessivo"
+                }
+              ]
+            }
+          }
+        }
+      },
+      "checkUserBanStatus": {
+        "method": "GET",
+        "path": "/admin/check/user/{userId}/ban-status",
+        "description": "Verificar status de banimento de um usuário",
+        "auth": true,
+        "admin": true,
+        "rateLimit": "30/min",
+        "pathParams": {
+          "userId": "UUID do usuário"
+        },
+        "response": {
+          "success": true,
+          "data": {
+            "isBanned": true,
+            "ban": {
+              "id": "ban-uuid",
+              "userId": "550e8400-e29b-41d4-a716-446655440000",
+              "adminId": "admin-uuid",
+              "reason": "Comportamento inadequado",
+              "type": "suspend",
+              "isActive": true,
+              "expiresAt": "2025-08-15T10:30:00.000Z",
+              "createdAt": "2025-08-14T10:30:00.000Z",
+              "updatedAt": "2025-08-14T10:30:00.000Z"
+            }
+          }
+        }
+      },
+      "checkIpBanStatus": {
+        "method": "GET",
+        "path": "/admin/check/ip/{ip}/ban-status",
+        "description": "Verificar se um IP está banido",
+        "auth": true,
+        "admin": true,
+        "rateLimit": "30/min",
+        "pathParams": {
+          "ip": "Endereço IP (ex: 192.168.1.100)"
+        },
+        "response": {
+          "success": true,
+          "data": {
+            "isBanned": true,
+            "ban": {
+              "id": "ip-ban-uuid",
+              "ip_address": "192.168.1.100",
+              "admin_id": "admin-uuid",
+              "reason": "IP banido junto com usuário: spammer123",
+              "is_active": true,
+              "expires_at": null,
+              "created_at": "2025-08-14T10:30:00.000Z",
+              "updated_at": "2025-08-14T10:30:00.000Z"
+            }
+          }
+        }
+      }
+    },
+    "workflowExamples": {
+      "banUserWorkflow": {
+        "description": "Fluxo completo para banir um usuário",
+        "steps": [
+          {
+            "step": 1,
+            "action": "Buscar usuário",
+            "request": "GET /admin/users?search=username"
+          },
+          {
+            "step": 2,
+            "action": "Ver detalhes do usuário",
+            "request": "GET /admin/users/{userId}"
+          },
+          {
+            "step": 3,
+            "action": "Banir usuário",
+            "request": "POST /admin/users/{userId}/ban",
+            "payload": {
+              "reason": "Violação dos termos de uso",
+              "type": "ban"
+            }
+          },
+          {
+            "step": 4,
+            "action": "Verificar banimento",
+            "request": "GET /admin/check/user/{userId}/ban-status"
+          }
+        ]
+      },
+      "suspendUserWorkflow": {
+        "description": "Fluxo para suspender usuário temporariamente",
+        "steps": [
+          {
+            "step": 1,
+            "action": "Identificar usuário",
+            "request": "GET /admin/users/{userId}"
+          },
+          {
+            "step": 2,
+            "action": "Suspender por 48 horas",
+            "request": "POST /admin/users/{userId}/suspend",
+            "payload": {
+              "reason": "Comportamento inadequado",
+              "duration": 48
+            }
+          },
+          {
+            "step": 3,
+            "action": "Verificar suspensão",
+            "request": "GET /admin/users/{userId}"
+          }
+        ]
+      },
+      "creditManagementWorkflow": {
+        "description": "Fluxo para gerenciar créditos de usuário",
+        "steps": [
+          {
+            "step": 1,
+            "action": "Ver usuário e créditos atuais",
+            "request": "GET /admin/users/{userId}"
+          },
+          {
+            "step": 2,
+            "action": "Adicionar créditos de bônus",
+            "request": "POST /admin/users/{userId}/credits",
+            "payload": {
+              "amount": 1000,
+              "reason": "Participação em evento especial"
+            }
+          },
+          {
+            "step": 3,
+            "action": "Verificar novos créditos",
+            "request": "GET /admin/users/{userId}"
+          }
+        ]
+      },
+      "dailyModerationWorkflow": {
+        "description": "Rotina diária de moderação",
+        "steps": [
+          {
+            "step": 1,
+            "action": "Ver dashboard",
+            "request": "GET /admin/dashboard"
+          },
+          {
+            "step": 2,
+            "action": "Revisar ações recentes",
+            "request": "GET /admin/actions?page=1&limit=20"
+          },
+          {
+            "step": 3,
+            "action": "Verificar usuários reportados",
+            "request": "GET /admin/users?isActive=false"
+          },
+          {
+            "step": 4,
+            "action": "Gerar relatório diário",
+            "request": "GET /admin/reports/users?timeframe=7d&format=json"
+          }
+        ]
+      }
+    },
+    "securityFeatures": {
+      "authentication": {
+        "type": "JWT Bearer Token",
+        "roleRequired": "admin",
+        "tokenValidation": "Verificação automática de expiração e validade"
+      },
+      "authorization": {
+        "rbac": "Role-based Access Control",
+        "userStatusCheck": "Verificação de conta ativa",
+        "adminPermissions": "Validação de permissões administrativas"
+      },
+      "auditLogging": {
+        "allActions": "Todas as ações são logadas automaticamente",
+        "metadata": "Informações completas sobre contexto da ação",
+        "retention": "Logs mantidos para auditoria e compliance"
+      },
+      "rateLimiting": {
+        "general": "30 req/min para operações normais",
+        "critical": "10 req/min para ações críticas (ban/unban)",
+        "reports": "5 req/min para geração de relatórios"
+      },
+      "ipBanning": {
+        "automatic": "IPs são banidos automaticamente com usuários",
+        "prevention": "Previne criação de novas contas no mesmo IP",
+        "temporary": "Suporte a banimentos temporários de IP"
+      }
+    },
+    "errorResponses": {
+      "unauthorized": {
+        "status": 401,
+        "body": {
+          "success": false,
+          "error": "Token de acesso requerido"
+        }
+      },
+      "forbidden": {
+        "status": 403,
+        "body": {
+          "success": false,
+          "error": "Acesso negado. Permissões de administrador necessárias."
+        }
+      },
+      "userNotFound": {
+        "status": 404,
+        "body": {
+          "success": false,
+          "error": "Usuário não encontrado"
+        }
+      },
+      "alreadyBanned": {
+        "status": 400,
+        "body": {
+          "success": false,
+          "error": "Usuário já possui banimento ativo"
+        }
+      },
+      "noBanFound": {
+        "status": 400,
+        "body": {
+          "success": false,
+          "error": "Usuário não possui banimento ativo"
+        }
+      },
+      "validation": {
+        "status": 400,
+        "body": {
+          "success": false,
+          "error": "Dados inválidos",
+          "details": [
+            {
+              "field": "reason",
+              "message": "Motivo deve ter pelo menos 10 caracteres"
+            }
+          ]
+        }
+      },
+      "rateLimit": {
+        "status": 429,
+        "body": {
+          "success": false,
+          "error": "Muitas ações administrativas. Aguarde um momento."
+        }
+      },
+      "criticalRateLimit": {
+        "status": 429,
+        "body": {
+          "success": false,
+          "error": "Limite de ações críticas excedido. Aguarde."
+        }
+      }
+    },
+    "integrationGuide": {
+      "authentication": {
+        "step1": "Obter token JWT através do login normal",
+        "step2": "Certificar-se que o usuário tem role 'admin'",
+        "step3": "Incluir token em todas as requisições: 'Authorization: Bearer {token}'"
+      },
+      "frontendIntegration": {
+        "dashboard": "Use GET /admin/dashboard para página inicial",
+        "userList": "Use GET /admin/users com paginação para listagem",
+        "userDetails": "Use GET /admin/users/{id} para detalhes",
+        "moderation": "Use POST endpoints para ações de moderação",
+        "audit": "Use GET /admin/actions para logs de auditoria"
+      },
+      "errorHandling": {
+        "401": "Redirecionar para login",
+        "403": "Mostrar mensagem de acesso negado",
+        "429": "Implementar retry com backoff",
+        "400": "Mostrar erros de validação ao usuário"
+      },
+      "realTimeUpdates": {
+        "polling": "Fazer polling do dashboard a cada 30s",
+        "userStatus": "Verificar status de usuários em tempo real",
+        "actionHistory": "Atualizar logs de ação automaticamente"
+      }
+    },
+    "bestPractices": {
+      "security": [
+        "Sempre validar role de admin antes de ações críticas",
+        "Implementar logout automático após inatividade",
+        "Confirmar ações destrutivas com modal de confirmação",
+        "Não armazenar dados sensíveis no localStorage"
+      ],
+      "userExperience": [
+        "Mostrar loading states durante ações",
+        "Implementar confirmação para ações irreversíveis",
+        "Fornecer feedback visual sobre sucesso/erro",
+        "Usar paginação para listas grandes"
+      ],
+      "performance": [
+        "Implementar cache para dados que mudam pouco",
+        "Usar debounce em campos de busca",
+        "Carregar dados sob demanda",
+        "Implementar virtual scrolling para listas muito grandes"
+      ],
+      "monitoring": [
+        "Monitorar taxa de erros 4xx/5xx",
+        "Acompanhar tempo de resposta das APIs",
+        "Alertar sobre uso excessivo de ações críticas",
+        "Logs detalhados para debugging"
+      ]
+    }
+  }
