@@ -26,3 +26,10 @@
   message: 'Redis SUBSCRIBE error:',
   timestamp: '2025-08-14 11:02:26'
 }
+{
+  channel: 'pixel_painted',
+  error: 'Reached the max retries per request limit (which is 3). Refer to "maxRetriesPerRequest" option for details.',
+  level: 'error',
+  message: 'Redis SUBSCRIBE error:',
+  timestamp: '2025-08-14 21:23:15'
+}
