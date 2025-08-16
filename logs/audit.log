@@ -33,3 +33,373 @@
   message: 'Redis SUBSCRIBE error:',
   timestamp: '2025-08-14 21:23:15'
 }
+{
+  channel: 'pixel_painted',
+  error: 'Command timed out',
+  level: 'error',
+  message: 'Redis SUBSCRIBE error:',
+  timestamp: '2025-08-16 14:35:03'
+}
+{
+  level: 'error',
+  message: 'Redis cleanup error: Command timed out',
+  stack: 'Error: Command timed out\n' +
+    '    at Timeout._onTimeout (C:\\Users\\gamin\\OneDrive\\Área de Trabalho\\youplace-backend\\node_modules\\ioredis\\built\\Command.js:192:33)\n' +
+    '    at listOnTimeout (node:internal/timers:608:17)\n' +
+    '    at process.processTimers (node:internal/timers:543:7)',
+  timestamp: '2025-08-16 14:39:39'
+}
+{
+  level: 'error',
+  message: 'Redis cleanup error: Command timed out',
+  stack: 'Error: Command timed out\n' +
+    '    at Timeout._onTimeout (C:\\Users\\gamin\\OneDrive\\Área de Trabalho\\youplace-backend\\node_modules\\ioredis\\built\\Command.js:192:33)\n' +
+    '    at listOnTimeout (node:internal/timers:608:17)\n' +
+    '    at process.processTimers (node:internal/timers:543:7)',
+  timestamp: '2025-08-16 14:44:39'
+}
+{
+  level: 'error',
+  message: 'Redis cleanup error: Command timed out',
+  stack: 'Error: Command timed out\n' +
+    '    at Timeout._onTimeout (C:\\Users\\gamin\\OneDrive\\Área de Trabalho\\youplace-backend\\node_modules\\ioredis\\built\\Command.js:192:33)\n' +
+    '    at listOnTimeout (node:internal/timers:608:17)\n' +
+    '    at process.processTimers (node:internal/timers:543:7)',
+  timestamp: '2025-08-16 14:49:39'
+}
+{
+  level: 'error',
+  message: 'Redis cleanup error: Command timed out',
+  stack: 'Error: Command timed out\n' +
+    '    at Timeout._onTimeout (C:\\Users\\gamin\\OneDrive\\Área de Trabalho\\youplace-backend\\node_modules\\ioredis\\built\\Command.js:192:33)\n' +
+    '    at listOnTimeout (node:internal/timers:608:17)\n' +
+    '    at process.processTimers (node:internal/timers:543:7)',
+  timestamp: '2025-08-16 14:54:39'
+}
+{
+  level: 'error',
+  message: 'Redis cleanup error: Command timed out',
+  stack: 'Error: Command timed out\n' +
+    '    at Timeout._onTimeout (C:\\Users\\gamin\\OneDrive\\Área de Trabalho\\youplace-backend\\node_modules\\ioredis\\built\\Command.js:192:33)\n' +
+    '    at listOnTimeout (node:internal/timers:608:17)\n' +
+    '    at process.processTimers (node:internal/timers:543:7)',
+  timestamp: '2025-08-16 14:59:39'
+}
+{
+  level: 'error',
+  message: 'Redis cleanup error: Command timed out',
+  stack: 'Error: Command timed out\n' +
+    '    at Timeout._onTimeout (C:\\Users\\gamin\\OneDrive\\Área de Trabalho\\youplace-backend\\node_modules\\ioredis\\built\\Command.js:192:33)\n' +
+    '    at listOnTimeout (node:internal/timers:608:17)\n' +
+    '    at process.processTimers (node:internal/timers:543:7)',
+  timestamp: '2025-08-16 15:04:39'
+}
+{
+  level: 'error',
+  message: 'Redis cleanup error: Command timed out',
+  stack: 'Error: Command timed out\n' +
+    '    at Timeout._onTimeout (C:\\Users\\gamin\\OneDrive\\Área de Trabalho\\youplace-backend\\node_modules\\ioredis\\built\\Command.js:192:33)\n' +
+    '    at listOnTimeout (node:internal/timers:608:17)\n' +
+    '    at process.processTimers (node:internal/timers:543:7)',
+  timestamp: '2025-08-16 15:09:39'
+}
+{
+  level: 'error',
+  message: 'Redis cleanup error: Command timed out',
+  stack: 'Error: Command timed out\n' +
+    '    at Timeout._onTimeout (C:\\Users\\gamin\\OneDrive\\Área de Trabalho\\youplace-backend\\node_modules\\ioredis\\built\\Command.js:192:33)\n' +
+    '    at listOnTimeout (node:internal/timers:608:17)\n' +
+    '    at process.processTimers (node:internal/timers:543:7)',
+  timestamp: '2025-08-16 15:14:39'
+}
+{
+  level: 'error',
+  message: 'Redis cleanup error: Command timed out',
+  stack: 'Error: Command timed out\n' +
+    '    at Timeout._onTimeout (C:\\Users\\gamin\\OneDrive\\Área de Trabalho\\youplace-backend\\node_modules\\ioredis\\built\\Command.js:192:33)\n' +
+    '    at listOnTimeout (node:internal/timers:608:17)\n' +
+    '    at process.processTimers (node:internal/timers:543:7)',
+  timestamp: '2025-08-16 15:19:39'
+}
+{
+  level: 'error',
+  message: 'Redis cleanup error: Command timed out',
+  stack: 'Error: Command timed out\n' +
+    '    at Timeout._onTimeout (C:\\Users\\gamin\\OneDrive\\Área de Trabalho\\youplace-backend\\node_modules\\ioredis\\built\\Command.js:192:33)\n' +
+    '    at listOnTimeout (node:internal/timers:608:17)\n' +
+    '    at process.processTimers (node:internal/timers:543:7)',
+  timestamp: '2025-08-16 15:24:39'
+}
+{
+  level: 'error',
+  message: 'Redis cleanup error: Command timed out',
+  stack: 'Error: Command timed out\n' +
+    '    at Timeout._onTimeout (C:\\Users\\gamin\\OneDrive\\Área de Trabalho\\youplace-backend\\node_modules\\ioredis\\built\\Command.js:192:33)\n' +
+    '    at listOnTimeout (node:internal/timers:608:17)\n' +
+    '    at process.processTimers (node:internal/timers:543:7)',
+  timestamp: '2025-08-16 15:29:39'
+}
+{
+  level: 'error',
+  message: 'Redis cleanup error: Command timed out',
+  stack: 'Error: Command timed out\n' +
+    '    at Timeout._onTimeout (C:\\Users\\gamin\\OneDrive\\Área de Trabalho\\youplace-backend\\node_modules\\ioredis\\built\\Command.js:192:33)\n' +
+    '    at listOnTimeout (node:internal/timers:608:17)\n' +
+    '    at process.processTimers (node:internal/timers:543:7)',
+  timestamp: '2025-08-16 15:34:39'
+}
+{
+  level: 'error',
+  message: 'Redis cleanup error: Command timed out',
+  stack: 'Error: Command timed out\n' +
+    '    at Timeout._onTimeout (C:\\Users\\gamin\\OneDrive\\Área de Trabalho\\youplace-backend\\node_modules\\ioredis\\built\\Command.js:192:33)\n' +
+    '    at listOnTimeout (node:internal/timers:608:17)\n' +
+    '    at process.processTimers (node:internal/timers:543:7)',
+  timestamp: '2025-08-16 15:39:39'
+}
+{
+  level: 'error',
+  message: 'Redis cleanup error: Reached the max retries per request limit (which is 3). Refer to "maxRetriesPerRequest" option for details.',
+  stack: 'MaxRetriesPerRequestError: Reached the max retries per request limit (which is 3). Refer to "maxRetriesPerRequest" option for details.\n' +
+    '    at Socket.<anonymous> (C:\\Users\\gamin\\OneDrive\\Área de Trabalho\\youplace-backend\\node_modules\\ioredis\\built\\redis\\event_handler.js:182:37)\n' +
+    '    at Object.onceWrapper (node:events:622:26)\n' +
+    '    at Socket.emit (node:events:507:28)\n' +
+    '    at TCP.<anonymous> (node:net:351:12)',
+  timestamp: '2025-08-16 15:44:34'
+}
+{
+  level: 'error',
+  message: 'Redis cleanup error: Command timed out',
+  stack: 'Error: Command timed out\n' +
+    '    at Timeout._onTimeout (C:\\Users\\gamin\\OneDrive\\Área de Trabalho\\youplace-backend\\node_modules\\ioredis\\built\\Command.js:192:33)\n' +
+    '    at listOnTimeout (node:internal/timers:608:17)\n' +
+    '    at process.processTimers (node:internal/timers:543:7)',
+  timestamp: '2025-08-16 15:49:39'
+}
+{
+  level: 'error',
+  message: 'Redis cleanup error: Command timed out',
+  stack: 'Error: Command timed out\n' +
+    '    at Timeout._onTimeout (C:\\Users\\gamin\\OneDrive\\Área de Trabalho\\youplace-backend\\node_modules\\ioredis\\built\\Command.js:192:33)\n' +
+    '    at listOnTimeout (node:internal/timers:608:17)\n' +
+    '    at process.processTimers (node:internal/timers:543:7)',
+  timestamp: '2025-08-16 15:54:39'
+}
+{
+  level: 'error',
+  message: 'Redis cleanup error: Command timed out',
+  stack: 'Error: Command timed out\n' +
+    '    at Timeout._onTimeout (C:\\Users\\gamin\\OneDrive\\Área de Trabalho\\youplace-backend\\node_modules\\ioredis\\built\\Command.js:192:33)\n' +
+    '    at listOnTimeout (node:internal/timers:608:17)\n' +
+    '    at process.processTimers (node:internal/timers:543:7)',
+  timestamp: '2025-08-16 15:59:39'
+}
+{
+  level: 'error',
+  message: 'Redis cleanup error: Reached the max retries per request limit (which is 3). Refer to "maxRetriesPerRequest" option for details.',
+  stack: 'MaxRetriesPerRequestError: Reached the max retries per request limit (which is 3). Refer to "maxRetriesPerRequest" option for details.\n' +
+    '    at Socket.<anonymous> (C:\\Users\\gamin\\OneDrive\\Área de Trabalho\\youplace-backend\\node_modules\\ioredis\\built\\redis\\event_handler.js:182:37)\n' +
+    '    at Object.onceWrapper (node:events:622:26)\n' +
+    '    at Socket.emit (node:events:507:28)\n' +
+    '    at TCP.<anonymous> (node:net:351:12)',
+  timestamp: '2025-08-16 16:04:36'
+}
+{
+  level: 'error',
+  message: 'Redis cleanup error: Command timed out',
+  stack: 'Error: Command timed out\n' +
+    '    at Timeout._onTimeout (C:\\Users\\gamin\\OneDrive\\Área de Trabalho\\youplace-backend\\node_modules\\ioredis\\built\\Command.js:192:33)\n' +
+    '    at listOnTimeout (node:internal/timers:608:17)\n' +
+    '    at process.processTimers (node:internal/timers:543:7)',
+  timestamp: '2025-08-16 16:09:39'
+}
+{
+  level: 'error',
+  message: 'Redis cleanup error: Command timed out',
+  stack: 'Error: Command timed out\n' +
+    '    at Timeout._onTimeout (C:\\Users\\gamin\\OneDrive\\Área de Trabalho\\youplace-backend\\node_modules\\ioredis\\built\\Command.js:192:33)\n' +
+    '    at listOnTimeout (node:internal/timers:608:17)\n' +
+    '    at process.processTimers (node:internal/timers:543:7)',
+  timestamp: '2025-08-16 16:14:39'
+}
+{
+  level: 'error',
+  message: 'Redis cleanup error: Command timed out',
+  stack: 'Error: Command timed out\n' +
+    '    at Timeout._onTimeout (C:\\Users\\gamin\\OneDrive\\Área de Trabalho\\youplace-backend\\node_modules\\ioredis\\built\\Command.js:192:33)\n' +
+    '    at listOnTimeout (node:internal/timers:608:17)\n' +
+    '    at process.processTimers (node:internal/timers:543:7)',
+  timestamp: '2025-08-16 16:19:39'
+}
+{
+  level: 'error',
+  message: 'Redis cleanup error: Reached the max retries per request limit (which is 3). Refer to "maxRetriesPerRequest" option for details.',
+  stack: 'MaxRetriesPerRequestError: Reached the max retries per request limit (which is 3). Refer to "maxRetriesPerRequest" option for details.\n' +
+    '    at Socket.<anonymous> (C:\\Users\\gamin\\OneDrive\\Área de Trabalho\\youplace-backend\\node_modules\\ioredis\\built\\redis\\event_handler.js:182:37)\n' +
+    '    at Object.onceWrapper (node:events:622:26)\n' +
+    '    at Socket.emit (node:events:507:28)\n' +
+    '    at TCP.<anonymous> (node:net:351:12)',
+  timestamp: '2025-08-16 16:24:37'
+}
+{
+  level: 'error',
+  message: 'Redis cleanup error: Command timed out',
+  stack: 'Error: Command timed out\n' +
+    '    at Timeout._onTimeout (C:\\Users\\gamin\\OneDrive\\Área de Trabalho\\youplace-backend\\node_modules\\ioredis\\built\\Command.js:192:33)\n' +
+    '    at listOnTimeout (node:internal/timers:608:17)\n' +
+    '    at process.processTimers (node:internal/timers:543:7)',
+  timestamp: '2025-08-16 16:29:39'
+}
+{
+  level: 'error',
+  message: 'Redis cleanup error: Command timed out',
+  stack: 'Error: Command timed out\n' +
+    '    at Timeout._onTimeout (C:\\Users\\gamin\\OneDrive\\Área de Trabalho\\youplace-backend\\node_modules\\ioredis\\built\\Command.js:192:33)\n' +
+    '    at listOnTimeout (node:internal/timers:608:17)\n' +
+    '    at process.processTimers (node:internal/timers:543:7)',
+  timestamp: '2025-08-16 16:34:39'
+}
+{
+  level: 'error',
+  message: 'Redis cleanup error: Command timed out',
+  stack: 'Error: Command timed out\n' +
+    '    at Timeout._onTimeout (C:\\Users\\gamin\\OneDrive\\Área de Trabalho\\youplace-backend\\node_modules\\ioredis\\built\\Command.js:192:33)\n' +
+    '    at listOnTimeout (node:internal/timers:608:17)\n' +
+    '    at process.processTimers (node:internal/timers:543:7)',
+  timestamp: '2025-08-16 16:39:39'
+}
+{
+  level: 'error',
+  message: 'Redis cleanup error: Command timed out',
+  stack: 'Error: Command timed out\n' +
+    '    at Timeout._onTimeout (C:\\Users\\gamin\\OneDrive\\Área de Trabalho\\youplace-backend\\node_modules\\ioredis\\built\\Command.js:192:33)\n' +
+    '    at listOnTimeout (node:internal/timers:608:17)\n' +
+    '    at process.processTimers (node:internal/timers:543:7)',
+  timestamp: '2025-08-16 16:44:39'
+}
+{
+  level: 'error',
+  message: 'Redis cleanup error: Command timed out',
+  stack: 'Error: Command timed out\n' +
+    '    at Timeout._onTimeout (C:\\Users\\gamin\\OneDrive\\Área de Trabalho\\youplace-backend\\node_modules\\ioredis\\built\\Command.js:192:33)\n' +
+    '    at listOnTimeout (node:internal/timers:608:17)\n' +
+    '    at process.processTimers (node:internal/timers:543:7)',
+  timestamp: '2025-08-16 16:49:39'
+}
+{
+  level: 'error',
+  message: 'Redis cleanup error: Command timed out',
+  stack: 'Error: Command timed out\n' +
+    '    at Timeout._onTimeout (C:\\Users\\gamin\\OneDrive\\Área de Trabalho\\youplace-backend\\node_modules\\ioredis\\built\\Command.js:192:33)\n' +
+    '    at listOnTimeout (node:internal/timers:608:17)\n' +
+    '    at process.processTimers (node:internal/timers:543:7)',
+  timestamp: '2025-08-16 16:54:39'
+}
+{
+  level: 'error',
+  message: 'Redis cleanup error: Command timed out',
+  stack: 'Error: Command timed out\n' +
+    '    at Timeout._onTimeout (C:\\Users\\gamin\\OneDrive\\Área de Trabalho\\youplace-backend\\node_modules\\ioredis\\built\\Command.js:192:33)\n' +
+    '    at listOnTimeout (node:internal/timers:608:17)\n' +
+    '    at process.processTimers (node:internal/timers:543:7)',
+  timestamp: '2025-08-16 16:59:39'
+}
+{
+  level: 'error',
+  message: 'Redis cleanup error: Command timed out',
+  stack: 'Error: Command timed out\n' +
+    '    at Timeout._onTimeout (C:\\Users\\gamin\\OneDrive\\Área de Trabalho\\youplace-backend\\node_modules\\ioredis\\built\\Command.js:192:33)\n' +
+    '    at listOnTimeout (node:internal/timers:608:17)\n' +
+    '    at process.processTimers (node:internal/timers:543:7)',
+  timestamp: '2025-08-16 17:04:39'
+}
+{
+  level: 'error',
+  message: 'Redis cleanup error: Command timed out',
+  stack: 'Error: Command timed out\n' +
+    '    at Timeout._onTimeout (C:\\Users\\gamin\\OneDrive\\Área de Trabalho\\youplace-backend\\node_modules\\ioredis\\built\\Command.js:192:33)\n' +
+    '    at listOnTimeout (node:internal/timers:608:17)\n' +
+    '    at process.processTimers (node:internal/timers:543:7)',
+  timestamp: '2025-08-16 17:09:39'
+}
+{
+  level: 'error',
+  message: 'Redis cleanup error: Command timed out',
+  stack: 'Error: Command timed out\n' +
+    '    at Timeout._onTimeout (C:\\Users\\gamin\\OneDrive\\Área de Trabalho\\youplace-backend\\node_modules\\ioredis\\built\\Command.js:192:33)\n' +
+    '    at listOnTimeout (node:internal/timers:608:17)\n' +
+    '    at process.processTimers (node:internal/timers:543:7)',
+  timestamp: '2025-08-16 17:14:39'
+}
+{
+  level: 'error',
+  message: 'Redis cleanup error: Reached the max retries per request limit (which is 3). Refer to "maxRetriesPerRequest" option for details.',
+  stack: 'MaxRetriesPerRequestError: Reached the max retries per request limit (which is 3). Refer to "maxRetriesPerRequest" option for details.\n' +
+    '    at Socket.<anonymous> (C:\\Users\\gamin\\OneDrive\\Área de Trabalho\\youplace-backend\\node_modules\\ioredis\\built\\redis\\event_handler.js:182:37)\n' +
+    '    at Object.onceWrapper (node:events:622:26)\n' +
+    '    at Socket.emit (node:events:507:28)\n' +
+    '    at TCP.<anonymous> (node:net:351:12)',
+  timestamp: '2025-08-16 17:19:34'
+}
+{
+  level: 'error',
+  message: 'Redis cleanup error: Command timed out',
+  stack: 'Error: Command timed out\n' +
+    '    at Timeout._onTimeout (C:\\Users\\gamin\\OneDrive\\Área de Trabalho\\youplace-backend\\node_modules\\ioredis\\built\\Command.js:192:33)\n' +
+    '    at listOnTimeout (node:internal/timers:608:17)\n' +
+    '    at process.processTimers (node:internal/timers:543:7)',
+  timestamp: '2025-08-16 17:24:39'
+}
+{
+  level: 'error',
+  message: 'Redis cleanup error: Command timed out',
+  stack: 'Error: Command timed out\n' +
+    '    at Timeout._onTimeout (C:\\Users\\gamin\\OneDrive\\Área de Trabalho\\youplace-backend\\node_modules\\ioredis\\built\\Command.js:192:33)\n' +
+    '    at listOnTimeout (node:internal/timers:608:17)\n' +
+    '    at process.processTimers (node:internal/timers:543:7)',
+  timestamp: '2025-08-16 17:29:39'
+}
+{
+  level: 'error',
+  message: 'Redis cleanup error: Command timed out',
+  stack: 'Error: Command timed out\n' +
+    '    at Timeout._onTimeout (C:\\Users\\gamin\\OneDrive\\Área de Trabalho\\youplace-backend\\node_modules\\ioredis\\built\\Command.js:192:33)\n' +
+    '    at listOnTimeout (node:internal/timers:608:17)\n' +
+    '    at process.processTimers (node:internal/timers:543:7)',
+  timestamp: '2025-08-16 17:34:39'
+}
+{
+  level: 'error',
+  message: 'Redis cleanup error: Reached the max retries per request limit (which is 3). Refer to "maxRetriesPerRequest" option for details.',
+  stack: 'MaxRetriesPerRequestError: Reached the max retries per request limit (which is 3). Refer to "maxRetriesPerRequest" option for details.\n' +
+    '    at Socket.<anonymous> (C:\\Users\\gamin\\OneDrive\\Área de Trabalho\\youplace-backend\\node_modules\\ioredis\\built\\redis\\event_handler.js:182:37)\n' +
+    '    at Object.onceWrapper (node:events:622:26)\n' +
+    '    at Socket.emit (node:events:507:28)\n' +
+    '    at TCP.<anonymous> (node:net:351:12)',
+  timestamp: '2025-08-16 17:39:36'
+}
+{
+  level: 'error',
+  message: 'Redis cleanup error: Command timed out',
+  stack: 'Error: Command timed out\n' +
+    '    at Timeout._onTimeout (C:\\Users\\gamin\\OneDrive\\Área de Trabalho\\youplace-backend\\node_modules\\ioredis\\built\\Command.js:192:33)\n' +
+    '    at listOnTimeout (node:internal/timers:608:17)\n' +
+    '    at process.processTimers (node:internal/timers:543:7)',
+  timestamp: '2025-08-16 17:44:39'
+}
+{
+  level: 'error',
+  message: 'Redis cleanup error: Command timed out',
+  stack: 'Error: Command timed out\n' +
+    '    at Timeout._onTimeout (C:\\Users\\gamin\\OneDrive\\Área de Trabalho\\youplace-backend\\node_modules\\ioredis\\built\\Command.js:192:33)\n' +
+    '    at listOnTimeout (node:internal/timers:608:17)\n' +
+    '    at process.processTimers (node:internal/timers:543:7)',
+  timestamp: '2025-08-16 17:49:39'
+}
+{
+  channel: 'pixel_painted',
+  error: 'Command timed out',
+  level: 'error',
+  message: 'Redis SUBSCRIBE error:',
+  timestamp: '2025-08-16 17:53:24'
+}
