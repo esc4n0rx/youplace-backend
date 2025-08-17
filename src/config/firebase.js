@@ -22,15 +22,10 @@ function normalizePrivateKey(privateKey) {
 
   let normalizedKey = privateKey.trim();
 
-  // Se a chave não começar com -----BEGIN, pode estar codificada em base64
-  if (!normalizedKey.startsWith('-----BEGIN')) {
-    try {
-      // Tentar decodificar de base64
-      normalizedKey = Buffer.from(normalizedKey, 'base64').toString('utf8');
-      console.log('🔄 Chave privada decodificada de base64');
-    } catch (error) {
-      console.warn('⚠️  Chave privada não é base64 válido, tentando usar diretamente');
-    }
+  // Remover aspas do início e fim se existirem
+  if ((normalizedKey.startsWith('"') && normalizedKey.endsWith('"')) || 
+      (normalizedKey.startsWith("'") && normalizedKey.endsWith("'"))) {
+    normalizedKey = normalizedKey.slice(1, -1);
   }
 
   // Normalizar quebras de linha e caracteres especiais
@@ -39,21 +34,55 @@ function normalizePrivateKey(privateKey) {
     .replace(/\\r/g, '\r')  
     .replace(/\r\n/g, '\n')
     .replace(/\\"/g, '"')
-    .replace(/^"|"$/g, '') // Remove aspas do início e fim
     .trim();
 
-  // Debug: mostrar primeiros caracteres da chave
-  console.log('🔑 Chave privada normalizada:', {
+  console.log('🔑 Chave após limpeza inicial:', {
     length: normalizedKey.length,
     startsWithBegin: normalizedKey.startsWith('-----BEGIN'),
-    firstChars: normalizedKey.substring(0, 30) + '...'
+    firstChars: normalizedKey.substring(0, 50) + '...'
+  });
+
+  // Se a chave NÃO começar com -----BEGIN após limpeza, pode estar em base64
+  if (!normalizedKey.startsWith('-----BEGIN')) {
+    try {
+      console.log('🔄 Tentando decodificar de base64...');
+      const decodedKey = Buffer.from(normalizedKey, 'base64').toString('utf8');
+      
+      // Verificar se a decodificação resultou em PEM válido
+      if (decodedKey.includes('-----BEGIN PRIVATE KEY-----') || 
+          decodedKey.includes('-----BEGIN RSA PRIVATE KEY-----')) {
+        normalizedKey = decodedKey;
+        console.log('✅ Chave decodificada de base64 com sucesso');
+      } else {
+        console.log('⚠️  Decodificação base64 não resultou em PEM válido, usando chave original');
+      }
+    } catch (error) {
+      console.log('⚠️  Erro na decodificação base64, usando chave original:', error.message);
+    }
+  }
+
+  // Normalizar novamente após possível decodificação
+  normalizedKey = normalizedKey
+    .replace(/\\n/g, '\n')
+    .replace(/\\r/g, '\r')  
+    .replace(/\r\n/g, '\n')
+    .trim();
+
+  console.log('🔑 Chave privada final:', {
+    length: normalizedKey.length,
+    startsWithBegin: normalizedKey.startsWith('-----BEGIN'),
+    endsWithEnd: normalizedKey.includes('-----END'),
+    firstLine: normalizedKey.split('\n')[0]
   });
 
   // Validar formato PEM
   if (!normalizedKey.includes('-----BEGIN PRIVATE KEY-----') && 
       !normalizedKey.includes('-----BEGIN RSA PRIVATE KEY-----')) {
     console.error('❌ Formato PEM inválido - cabeçalho não encontrado');
-    console.error('   Primeiros 100 caracteres:', normalizedKey.substring(0, 100));
+    console.error('   Primeiros 200 caracteres da chave:');
+    console.error('  ', normalizedKey.substring(0, 200));
+    console.error('   Código dos primeiros caracteres:');
+    console.error('  ', normalizedKey.substring(0, 50).split('').map(c => c.charCodeAt(0)).join(' '));
     throw new Error('Invalid PEM format: missing BEGIN PRIVATE KEY header');
   }
 
@@ -69,6 +98,11 @@ function normalizePrivateKey(privateKey) {
 try {
   // Normalizar a chave privada antes de usar
   console.log('🔥 Inicializando Firebase Admin SDK...');
+  console.log('🔍 Chave privada bruta:', {
+    length: config.private_key ? config.private_key.length : 0,
+    startsWithQuote: config.private_key ? config.private_key.startsWith('"') : false,
+    firstChars: config.private_key ? config.private_key.substring(0, 30) + '...' : 'null'
+  });
   
   const normalizedPrivateKey = normalizePrivateKey(config.private_key);
 
@@ -90,7 +124,8 @@ try {
     project_id: config.project_id,
     client_email: config.client_email,
     private_key_id: config.private_key_id,
-    hasPrivateKey: !!normalizedPrivateKey
+    hasPrivateKey: !!normalizedPrivateKey,
+    keyFirstLine: normalizedPrivateKey.split('\n')[0]
   });
 
   admin.initializeApp({
@@ -112,7 +147,7 @@ try {
   console.error('   - NODE_ENV:', process.env.NODE_ENV);
   console.error('   - Platform:', process.platform);
   console.error('   - Private key length:', config.private_key ? config.private_key.length : 'null');
-  console.error('   - Raw private key start:', config.private_key ? config.private_key.substring(0, 50) + '...' : 'null');
+  console.error('   - Raw private key start:', config.private_key ? config.private_key.substring(0, 100) + '...' : 'null');
   
   // Em produção, não deve crashar a aplicação por causa do Firebase
   if (process.env.NODE_ENV === 'production') {
