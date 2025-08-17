@@ -100,8 +100,8 @@ services:
       retries: 5
 
 volumes:
-  youplace-redis-data:
-  youplace-logs:
+      - .:/app
+      - /app/node_modules
 
 networks:
   youplace-network:
