@@ -2056,3 +2056,13 @@
   message: 'Socket server stats',
   timestamp: '2025-08-16 17:56:19'
 }
+{
+  level: 'info',
+  message: 'SocketServer initialized',
+  timestamp: '2025-08-16 23:06:35'
+}
+{
+  level: 'error',
+  message: 'Unhandled Rejection at:',
+  timestamp: '2025-08-16 23:06:35'
+}

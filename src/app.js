@@ -36,12 +36,10 @@ app.use(helmet());
 
 // CORS
 app.use(cors({
-  origin: nodeEnv === 'production' 
-    ? frontendDomains // Usar domínios configurados
-    : ['http://localhost:3000', 'http://localhost:3001'],
-  credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Authorization', 'Content-Type', 'X-Requested-With']
+  origin: process.env.NODE_ENV === 'production'
+    ? frontendDomains
+    : ['http://localhost:3000', 'https://youplace.space', 'https://www.youplace.space'],
+  // ...
 }));
 
 // Rate limiting geral

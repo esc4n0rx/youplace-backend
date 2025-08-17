@@ -403,3 +403,8 @@
   message: 'Redis SUBSCRIBE error:',
   timestamp: '2025-08-16 17:53:24'
 }
+{
+  level: 'error',
+  message: 'Unhandled Rejection at:',
+  timestamp: '2025-08-16 23:06:35'
+}
