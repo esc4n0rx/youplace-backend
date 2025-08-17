@@ -5,7 +5,8 @@ FROM node:18-alpine AS base
 RUN apk add --no-cache \
     dumb-init \
     curl \
-    bash
+    bash \
+    netcat-openbsd
 
 # Criar usuário não-root
 RUN addgroup -g 1001 -S nodejs && \
@@ -22,9 +23,6 @@ FROM base AS development
 
 # Instalar todas as dependências (incluindo devDependencies)
 RUN npm ci --include=dev
-
-# Verificar se nodemon foi instalado
-RUN npx nodemon --version || npm install -g nodemon
 
 # Copiar código fonte
 COPY --chown=youplace:nodejs . .
@@ -54,8 +52,11 @@ COPY --chown=youplace:nodejs . .
 RUN mkdir -p logs && chown youplace:nodejs logs
 
 # Health check
+COPY docker/scripts/healthcheck.sh /usr/local/bin/healthcheck.sh
+RUN chmod +x /usr/local/bin/healthcheck.sh
+
 HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
-  CMD curl -f http://localhost:3001/api/v1/health || exit 1
+  CMD /usr/local/bin/healthcheck.sh
 
 # Expor porta
 EXPOSE 3001

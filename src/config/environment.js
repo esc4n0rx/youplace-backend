@@ -41,11 +41,12 @@ module.exports = {
     client_x509_cert_url: process.env.FIREBASE_CLIENT_X509_CERT_URL
   },
 
+  // Redis configuração para instância externa
   redis: {
     host: process.env.REDIS_HOST || 'localhost',
-    port: process.env.REDIS_PORT || 6379,
+    port: parseInt(process.env.REDIS_PORT) || 6379,
     password: process.env.REDIS_PASSWORD || undefined,
-    db: process.env.REDIS_DB || 0
+    db: parseInt(process.env.REDIS_DB) || 0
   },
 
   websocket: {
