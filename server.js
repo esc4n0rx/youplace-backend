@@ -1,5 +1,5 @@
 const http = require('http');
-const app = require('./src/app');
+const app = require('./src/app.js');
 const SocketServer = require('./src/websocket/socket-server');
 const RealtimeService = require('./src/domain/services/realtime-service');
 const { port } = require('./src/config/environment');
