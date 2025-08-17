@@ -36,10 +36,12 @@ app.use(helmet());
 
 // CORS
 app.use(cors({
-  origin: process.env.NODE_ENV === 'production' 
-    ? ['https://yourdomain.com'] // Substitua pelo seu domínio em produção
+  origin: nodeEnv === 'production' 
+    ? frontendDomains // Usar domínios configurados
     : ['http://localhost:3000', 'http://localhost:3001'],
-  credentials: true
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Authorization', 'Content-Type', 'X-Requested-With']
 }));
 
 // Rate limiting geral

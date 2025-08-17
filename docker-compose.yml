@@ -1,7 +1,6 @@
 version: '3.8'
 
 services:
-  # === APLICAÇÃO NODE.JS ===
   youplace-backend:
     build:
       context: .
@@ -14,15 +13,21 @@ services:
     environment:
       - NODE_ENV=development
       - PORT=3001
+      
+      # JWT
       - JWT_SECRET=${JWT_SECRET:-dev-secret-change-this}
       - JWT_EXPIRES_IN=${JWT_EXPIRES_IN:-7d}
       
-      # Supabase (deve ser fornecido via .env)
+      # API Domain Configuration
+      - API_DOMAIN=${API_DOMAIN:-http://localhost:3001}
+      - FRONTEND_DOMAINS=${FRONTEND_DOMAINS:-http://localhost:3000,http://localhost:3001}
+      
+      # Supabase
       - SUPABASE_URL=${SUPABASE_URL}
       - SUPABASE_ANON_KEY=${SUPABASE_ANON_KEY}
       - SUPABASE_SERVICE_KEY=${SUPABASE_SERVICE_KEY}
       
-      # Firebase (deve ser fornecido via .env)
+      # Firebase
       - FIREBASE_TYPE=${FIREBASE_TYPE}
       - FIREBASE_PROJECT_ID=${FIREBASE_PROJECT_ID}
       - FIREBASE_PRIVATE_KEY_ID=${FIREBASE_PRIVATE_KEY_ID}
@@ -54,7 +59,6 @@ services:
       - LOG_TO_FILE=true
       - LOG_DIR=/app/logs
     volumes:
-      # Hot reload para desenvolvimento
       - ./src:/app/src:ro
       - ./package*.json:/app/package*.json:ro
       - youplace-logs:/app/logs
@@ -70,7 +74,6 @@ services:
       retries: 3
       start_period: 40s
 
-  # === REDIS ===
   redis:
     image: redis:7-alpine
     container_name: youplace-redis-dev
@@ -96,35 +99,10 @@ services:
       timeout: 5s
       retries: 5
 
-  # === REDIS COMMANDER (Interface Web para Redis) ===
-  redis-commander:
-    image: rediscommander/redis-commander:latest
-    container_name: youplace-redis-commander
-    restart: unless-stopped
-    ports:
-      - "8081:8081"
-    environment:
-      - REDIS_HOSTS=local:redis:6379
-      - REDIS_PASSWORD=${REDIS_PASSWORD:-}
-    depends_on:
-      redis:
-        condition: service_healthy
-    networks:
-      - youplace-network
-    profiles:
-      - tools
-
-# === VOLUMES ===
 volumes:
   youplace-redis-data:
-    driver: local
   youplace-logs:
-    driver: local
 
-# === NETWORKS ===
 networks:
   youplace-network:
     driver: bridge
-    ipam:
-      config:
-        - subnet: 172.20.0.0/16

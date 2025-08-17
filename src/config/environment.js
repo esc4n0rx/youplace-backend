@@ -4,6 +4,12 @@ module.exports = {
   port: process.env.PORT || 3001,
   nodeEnv: process.env.NODE_ENV || 'development',
   
+  // Domain configuration
+  apiDomain: process.env.API_DOMAIN || 'http://localhost:3001',
+  frontendDomains: process.env.FRONTEND_DOMAINS ? 
+    process.env.FRONTEND_DOMAINS.split(',').map(d => d.trim()) :
+    ['http://localhost:3000', 'http://localhost:3001'],
+  
   jwt: {
     secret: process.env.JWT_SECRET || 'fallback-secret-change-this',
     expiresIn: process.env.JWT_EXPIRES_IN || '7d'
@@ -19,14 +25,13 @@ module.exports = {
     type: process.env.FIREBASE_TYPE,
     project_id: process.env.FIREBASE_PROJECT_ID,
     private_key_id: process.env.FIREBASE_PRIVATE_KEY_ID,
-    // Função mais robusta para tratar a chave privada
     private_key: process.env.FIREBASE_PRIVATE_KEY ? 
       process.env.FIREBASE_PRIVATE_KEY
-        .replace(/\\n/g, '\n')  // Substituir \n literais por quebras reais
-        .replace(/\\r/g, '\r')  // Tratar \r também
-        .replace(/\r\n/g, '\n') // Padronizar quebras para Unix
-        .replace(/"/g, '')      // Remover aspas se existirem
-        .trim()                 // Remover espaços extras
+        .replace(/\\n/g, '\n')
+        .replace(/\\r/g, '\r')
+        .replace(/\r\n/g, '\n')
+        .replace(/"/g, '')
+        .trim()
       : null,
     client_email: process.env.FIREBASE_CLIENT_EMAIL,
     client_id: process.env.FIREBASE_CLIENT_ID,
@@ -51,7 +56,7 @@ module.exports = {
   },
 
   rateLimiting: {
-    windowMs: parseInt(process.env.RATE_LIMIT_WINDOW_MS) || 900000, // 15 minutes
+    windowMs: parseInt(process.env.RATE_LIMIT_WINDOW_MS) || 900000,
     maxRequests: parseInt(process.env.RATE_LIMIT_MAX_REQUESTS) || 100
   }
 };
