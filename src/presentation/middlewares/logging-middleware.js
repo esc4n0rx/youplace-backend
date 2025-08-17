@@ -7,26 +7,23 @@ class LoggingMiddleware {
     this.loggingService = new LoggingService();
   }
 
-  // Middleware do Morgan customizado
   createMorganMiddleware() {
-    // Formato customizado do Morgan
     const morganFormat = ':remote-addr - :remote-user [:date[clf]] ":method :url HTTP/:http-version" :status :res[content-length] ":referrer" ":user-agent" :response-time ms';
 
     return morgan(morganFormat, {
       stream: logger.stream,
       skip: (req, res) => {
-        // Pular health checks e requests internos
         return req.path === '/health' || req.path === '/favicon.ico';
       }
     });
   }
 
-  // Middleware para logging estruturado
   structuredLogging() {
+    const loggingService = this.loggingService; // Capturar referência
+    
     return async (req, res, next) => {
       const startTime = process.hrtime.bigint();
       
-      // Capturar dados da requisição
       const requestData = {
         method: req.method,
         url: req.originalUrl,
@@ -36,16 +33,13 @@ class LoggingMiddleware {
         timestamp: new Date().toISOString()
       };
 
-      // Log da requisição recebida
       logger.http('Requisição recebida', requestData);
 
-      // Override do res.end para capturar resposta
       const originalEnd = res.end;
       res.end = function(...args) {
         const endTime = process.hrtime.bigint();
-        const responseTime = Number(endTime - startTime) / 1000000; // Convert to ms
+        const responseTime = Number(endTime - startTime) / 1000000;
 
-        // Dados da resposta
         const responseData = {
           ...requestData,
           statusCode: res.statusCode,
@@ -53,10 +47,10 @@ class LoggingMiddleware {
           contentLength: res.get('Content-Length') || 0
         };
 
-        // Log estruturado assíncrono
+        // CORREÇÃO: Usar a referência capturada
         setImmediate(async () => {
           try {
-            await this.loggingService.createLog({
+            await loggingService.createLog({
               level: res.statusCode >= 400 ? 'error' : 'info',
               type: res.statusCode >= 400 ? 'error' : 'http',
               message: `${req.method} ${req.originalUrl} - ${res.statusCode}`,
@@ -78,21 +72,20 @@ class LoggingMiddleware {
           }
         });
 
-        // Log imediato no console
         const logLevel = res.statusCode >= 500 ? 'error' : 
                         res.statusCode >= 400 ? 'warn' : 'info';
         
         logger[logLevel]('Resposta enviada', responseData);
-
         originalEnd.apply(this, args);
-      }.bind(res);
+      };
 
       next();
     };
   }
 
-  // Middleware para logging de erros
   errorLogging() {
+    const loggingService = this.loggingService; // Capturar referência
+    
     return async (err, req, res, next) => {
       const errorData = {
         message: err.message,
@@ -107,12 +100,10 @@ class LoggingMiddleware {
         params: req.params
       };
 
-      // Log do erro
       logger.error('Erro na aplicação', errorData);
 
-      // Salvar no banco de dados
       try {
-        await this.loggingService.createLog({
+        await loggingService.createLog({
           level: 'error',
           type: 'application_error',
           message: `Erro: ${err.message}`,
@@ -136,14 +127,14 @@ class LoggingMiddleware {
     };
   }
 
-  // Middleware para auditoria de ações específicas
   auditMiddleware(action) {
+    const loggingService = this.loggingService; // Capturar referência
+    
     return async (req, res, next) => {
-      // Executar após a resposta
       res.on('finish', async () => {
         if (res.statusCode < 400 && req.user) {
           try {
-            await this.loggingService.logAudit(
+            await loggingService.logAudit(
               `Ação realizada: ${action}`,
               req.user.userId,
               {
@@ -167,8 +158,9 @@ class LoggingMiddleware {
     };
   }
 
-  // Middleware para detectar atividades suspeitas
   securityLogging() {
+    const loggingService = this.loggingService; // Capturar referência
+    
     return async (req, res, next) => {
       const suspiciousPatterns = [
         /(\.\.|\/etc\/|\/var\/|\/usr\/)/i,
@@ -195,7 +187,7 @@ class LoggingMiddleware {
         });
 
         try {
-          await this.loggingService.logSecurity(
+          await loggingService.logSecurity(
             'Tentativa de ataque detectada',
             req.ip,
             req.get('User-Agent'),
@@ -217,7 +209,6 @@ class LoggingMiddleware {
   }
 }
 
-// Instância singleton
 const loggingMiddleware = new LoggingMiddleware();
 
 module.exports = {

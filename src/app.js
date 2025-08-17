@@ -56,6 +56,38 @@ app.use(limiter);
 // Trust proxy para obter IP real (importante para rate limiting e anti-abuse)
 app.set('trust proxy', 1);
 
+// Health check
+app.get('/health', (req, res) => {
+  const realtimeStats = req.realtimeService ? 
+    req.realtimeService.getSystemStats() : 
+    { error: 'RealtimeService not available' };
+
+  res.status(200).json({
+    success: true,
+    message: 'YouPlace Backend is running',
+    timestamp: new Date().toISOString(),
+    cronJobs: {
+      dailyBonus: 'active'
+    },
+    version: '1.0.0',
+    uptime: process.uptime(),
+    realtime: realtimeStats
+  });
+});
+
+// Rota alternativa para compatibilidade com healthcheck
+app.get('/api/v1/health', (req, res) => {
+  res.status(200).json({
+    success: true,
+    status: 'healthy',
+    timestamp: new Date().toISOString(),
+    uptime: process.uptime(),
+    memory: process.memoryUsage(),
+    env: process.env.NODE_ENV
+  });
+});
+
+
 // === LOGGING E MONITORAMENTO ===
 app.use(morganMiddleware); // HTTP logging
 app.use(structuredLogging); // Log estruturado
@@ -75,25 +107,6 @@ app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 app.use((req, res, next) => {
   req.realtimeService = app.locals.realtimeService;
   next();
-});
-
-// Health check
-app.get('/health', (req, res) => {
-  const realtimeStats = req.realtimeService ? 
-    req.realtimeService.getSystemStats() : 
-    { error: 'RealtimeService not available' };
-
-  res.status(200).json({
-    success: true,
-    message: 'YouPlace Backend is running',
-    timestamp: new Date().toISOString(),
-    cronJobs: {
-      dailyBonus: 'active'
-    },
-    version: '1.0.0',
-    uptime: process.uptime(),
-    realtime: realtimeStats
-  });
 });
 
 // Rotas da API
