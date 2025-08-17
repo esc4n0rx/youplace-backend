@@ -1,0 +1,134 @@
+version: '3.8'
+
+services:
+  # === NGINX (Load Balancer / Reverse Proxy) ===
+  nginx:
+    image: nginx:alpine
+    container_name: youplace-nginx-prod
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./docker/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - youplace-logs:/var/log/nginx
+    depends_on:
+      - youplace-backend
+    networks:
+      - youplace-network
+
+  # === APLICAÇÃO NODE.JS (2 instâncias para HA) ===
+  youplace-backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: production
+    restart: unless-stopped
+    deploy:
+      replicas: 2
+    environment:
+      - NODE_ENV=production
+      - PORT=3001
+      - JWT_SECRET=${JWT_SECRET}
+      - JWT_EXPIRES_IN=${JWT_EXPIRES_IN:-7d}
+      
+      # Supabase
+      - SUPABASE_URL=${SUPABASE_URL}
+      - SUPABASE_ANON_KEY=${SUPABASE_ANON_KEY}
+      - SUPABASE_SERVICE_KEY=${SUPABASE_SERVICE_KEY}
+      
+      # Firebase
+      - FIREBASE_TYPE=${FIREBASE_TYPE}
+      - FIREBASE_PROJECT_ID=${FIREBASE_PROJECT_ID}
+      - FIREBASE_PRIVATE_KEY_ID=${FIREBASE_PRIVATE_KEY_ID}
+      - FIREBASE_PRIVATE_KEY=${FIREBASE_PRIVATE_KEY}
+      - FIREBASE_CLIENT_EMAIL=${FIREBASE_CLIENT_EMAIL}
+      - FIREBASE_CLIENT_ID=${FIREBASE_CLIENT_ID}
+      - FIREBASE_AUTH_URI=${FIREBASE_AUTH_URI}
+      - FIREBASE_TOKEN_URI=${FIREBASE_TOKEN_URI}
+      - FIREBASE_AUTH_PROVIDER_X509_CERT_URL=${FIREBASE_AUTH_PROVIDER_X509_CERT_URL}
+      - FIREBASE_CLIENT_X509_CERT_URL=${FIREBASE_CLIENT_X509_CERT_URL}
+      
+      # Redis
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
+      - REDIS_DB=0
+      
+      # WebSocket
+      - WS_PING_TIMEOUT=60000
+      - WS_PING_INTERVAL=25000
+      - WS_BATCH_TIMEOUT=500
+      - WS_MAX_BATCH_SIZE=50
+      
+      # Rate Limiting
+      - RATE_LIMIT_WINDOW_MS=900000
+      - RATE_LIMIT_MAX_REQUESTS=100
+      
+      # Logging
+      - LOG_TO_FILE=true
+      - LOG_DIR=/app/logs
+    volumes:
+      - youplace-logs:/app/logs
+    depends_on:
+      redis:
+        condition: service_healthy
+    networks:
+      - youplace-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3001/api/v1/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # === REDIS CLUSTER (Produção) ===
+  redis:
+    image: redis:7-alpine
+    container_name: youplace-redis-prod
+    restart: unless-stopped
+    command: >
+      redis-server
+      --appendonly yes
+      --appendfsync everysec
+      --save 300 100
+      --maxmemory 1gb
+      --maxmemory-policy allkeys-lru
+      --tcp-keepalive 300
+    environment:
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
+    volumes:
+      - youplace-redis-data:/data
+    networks:
+      - youplace-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # === MONITORING (Opcional) ===
+  watchtower:
+    image: containrrr/watchtower
+    container_name: youplace-watchtower
+    restart: unless-stopped
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    command: --interval 300 --cleanup
+    profiles:
+      - monitoring
+
+# === VOLUMES ===
+volumes:
+  youplace-redis-data:
+    driver: local
+  youplace-logs:
+    driver: local
+
+# === NETWORKS ===
+networks:
+  youplace-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16
