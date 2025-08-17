@@ -16,13 +16,17 @@ class MonitoringMiddleware {
         const endTime = process.hrtime.bigint();
         const responseTime = Number(endTime - startTime) / 1000000; // Convert to ms
 
+        // CORREÇÃO: Capturar o contexto da instância de middleware
+        const monitoringService = req.app.locals.monitoringService || 
+                                 new MonitoringService();
+
         // Registrar métricas assíncronamente
         setImmediate(async () => {
           try {
             const userId = req.user ? req.user.userId : null;
             
             // Registrar tempo de resposta
-            await this.monitoringService.recordResponseTime(
+            await monitoringService.recordResponseTime(
               req.route ? req.route.path : req.path,
               req.method,
               Math.round(responseTime),
@@ -31,7 +35,7 @@ class MonitoringMiddleware {
             );
 
             // Registrar contagem de requisições
-            await this.monitoringService.recordRequest(
+            await monitoringService.recordRequest(
               req.route ? req.route.path : req.path,
               req.method,
               res.statusCode,
@@ -40,7 +44,7 @@ class MonitoringMiddleware {
 
             // Registrar erros
             if (res.statusCode >= 400) {
-              await this.monitoringService.recordError(
+              await monitoringService.recordError(
                 req.route ? req.route.path : req.path,
                 req.method,
                 res.statusCode,
@@ -51,10 +55,10 @@ class MonitoringMiddleware {
           } catch (error) {
             console.error('Erro ao registrar métricas:', error);
           }
-        },bind(this));
+        });
 
         originalEnd.apply(this, args);
-      }.bind(res);
+      };
 
       next();
     };
@@ -66,7 +70,10 @@ class MonitoringMiddleware {
       res.on('finish', async () => {
         if (res.statusCode < 400 && req.user) {
           try {
-            await this.monitoringService.recordUserAction(
+            const monitoringService = req.app.locals.monitoringService || 
+                                     new MonitoringService();
+            
+            await monitoringService.recordUserAction(
               action,
               req.user.userId,
               {
@@ -101,7 +108,10 @@ class MonitoringMiddleware {
         const duration = Number(endTime - timerStart) / 1000000;
 
         try {
-          await this.monitoringService.recordMetric(
+          const monitoringService = req.app.locals.monitoringService || 
+                                   new MonitoringService();
+          
+          await monitoringService.recordMetric(
             'operation_time',
             Math.round(duration),
             'ms',
@@ -113,106 +123,51 @@ class MonitoringMiddleware {
             }
           );
         } catch (error) {
-          console.error('Erro ao registrar métrica de performance:', error);
+          console.error('Erro ao registrar performance:', error);
         }
       };
 
-      // Registrar tempo total da operação
-      res.on('finish', async () => {
-        const endTime = process.hrtime.bigint();
-        const totalTime = Number(endTime - startTime) / 1000000;
-
-        try {
-          await this.monitoringService.recordMetric(
-            'operation_total_time',
-            Math.round(totalTime),
-            'ms',
-            {
-              operation: operationName,
-              endpoint: req.originalUrl,
-              method: req.method,
-              statusCode: res.statusCode,
-              userId: req.user ? req.user.userId : null
-            }
-          );
-        } catch (error) {
-          console.error('Erro ao registrar tempo total da operação:', error);
-        }
-      });
-
       next();
     };
   }
 
-  // Middleware para monitorar uso de recursos
+  // Middleware para monitoramento de recursos do sistema
   resourceMonitoring() {
-    return (req, res, next) => {
-      const memUsageBefore = process.memoryUsage();
-      
-      res.on('finish', async () => {
-        try {
-          const memUsageAfter = process.memoryUsage();
-          const memDelta = memUsageAfter.heapUsed - memUsageBefore.heapUsed;
-
-          // Registrar uso de memória se significativo
-          if (Math.abs(memDelta) > 1024 * 1024) { // > 1MB
-            await this.monitoringService.recordMetric(
-              'memory_usage_delta',
-              memDelta,
-              'bytes',
-              {
-                endpoint: req.originalUrl,
-                method: req.method,
-                heapUsed: memUsageAfter.heapUsed,
-                heapTotal: memUsageAfter.heapTotal
-              }
-            );
+    return async (req, res, next) => {
+      try {
+        const memUsage = process.memoryUsage();
+        const monitoringService = req.app.locals.monitoringService || 
+                                 new MonitoringService();
+        
+        await monitoringService.recordMetric(
+          'memory_usage',
+          Math.round(memUsage.heapUsed / 1024 / 1024), // MB
+          'mb',
+          {
+            heap_total: Math.round(memUsage.heapTotal / 1024 / 1024),
+            heap_used: Math.round(memUsage.heapUsed / 1024 / 1024),
+            external: Math.round(memUsage.external / 1024 / 1024),
+            endpoint: req.originalUrl
           }
-
-          // Registrar CPU usage se disponível
-          if (process.cpuUsage) {
-            const cpuUsage = process.cpuUsage();
-            await this.monitoringService.recordMetric(
-              'cpu_usage',
-              cpuUsage.user + cpuUsage.system,
-              'microseconds',
-              {
-                endpoint: req.originalUrl,
-                method: req.method,
-                user: cpuUsage.user,
-                system: cpuUsage.system
-              }
-            );
-          }
-        } catch (error) {
-          console.error('Erro ao registrar métricas de recursos:', error);
-        }
-      });
+        );
+      } catch (error) {
+        console.error('Erro ao registrar uso de recursos:', error);
+      }
 
       next();
     };
   }
 
-  // Middleware para detectar rate limiting
+  // Middleware para monitoramento de rate limiting
   rateLimitMonitoring() {
     return async (req, res, next) => {
       res.on('finish', async () => {
-        if (res.statusCode === 429) {
+        if (res.statusCode === 429) { // Too Many Requests
           try {
-            await this.monitoringService.recordMetric(
-              'rate_limit_hit',
-              1,
-              'count',
-              {
-                endpoint: req.originalUrl,
-                method: req.method,
-                ip: req.ip,
-                userAgent: req.get('User-Agent'),
-                userId: req.user ? req.user.userId : null
-              }
-            );
-
-            await this.monitoringService.recordSystemEvent(
+            const monitoringService = req.app.locals.monitoringService || 
+                                     new MonitoringService();
+            
+            await monitoringService.recordSystemEvent(
               'rate_limit_triggered',
               'warning',
               {
