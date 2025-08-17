@@ -59,8 +59,9 @@ services:
       - LOG_TO_FILE=true
       - LOG_DIR=/app/logs
     volumes:
-      - .:/app
-      - /app/node_modules
+      - ./src:/app/src:ro
+      - ./package*.json:/app/package*.json:ro
+      - youplace-logs:/app/logs
     depends_on:
       redis:
         condition: service_healthy
