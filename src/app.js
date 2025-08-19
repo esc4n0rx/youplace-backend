@@ -38,7 +38,7 @@ app.use(helmet());
 app.use(cors({
   origin: process.env.NODE_ENV === 'production'
     ? frontendDomains
-    : ['http://localhost:3000', 'https://youplace.space', 'https://www.youplace.space'],
+    : ['http://localhost:3000', 'https://youplace.space', 'https://www.youplace.space','http://youplace.space'],
   // ...
 }));
 
