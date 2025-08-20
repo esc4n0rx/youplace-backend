@@ -37,10 +37,11 @@ const dailyBonusJob = new DailyBonusJob();
 
 // Middleware de segurança
 app.use(helmet({
-  crossOriginEmbedderPolicy: false, // Para permitir requests cross-origin
+  crossOriginEmbedderPolicy: false, 
+
   contentSecurityPolicy: {
     directives: {
-      "cross-origin-embedder-policy": false,
+      defaultSrc: ["'self'"],
     },
   },
 }));
