@@ -34,84 +34,76 @@ const DailyBonusJob = require('./jobs/daily-bonus-job');
 
 const app = express();
 
-// Inicializar job de bônus diário
+// CORREÇÃO: Inicializar E INICIAR job de bônus diário
 const dailyBonusJob = new DailyBonusJob();
 dailyBonusJob.start();
 
+// Disponibilizar o job globalmente para poder parar no shutdown
 app.locals.dailyBonusJob = dailyBonusJob;
 
-// Middleware de segurança
-app.use(helmet({
-  crossOriginResourcePolicy: { policy: "cross-origin" }
-}));
-
-// CORREÇÃO PRINCIPAL: CORS configurado corretamente para produção
+// ⚠️ VERSÃO DE TESTE: CORS ULTRA-PERMISSIVO ⚠️
+console.log('🚨 ATENÇÃO: CORS em modo TESTE - PERMITE TUDO! 🚨');
 app.use(cors({
-  origin: function (origin, callback) {
-    // Permitir requisições sem origin (ex: mobile apps, Postman, testes)
-    if (!origin) return callback(null, true);
-    
-    // CORRIGIDO: Usar frontendDomains sempre, seja produção ou desenvolvimento
-    const allowedOrigins = frontendDomains;
-      
-    console.log('CORS Check:', { 
-      origin, 
-      allowedOrigins, 
-      nodeEnv,
-      isAllowed: allowedOrigins.includes(origin)
-    });
-    
-    if (allowedOrigins.includes(origin)) {
-      return callback(null, true);
-    }
-    
-    const msg = `Origin ${origin} não permitida pelo CORS. Domínios permitidos: ${allowedOrigins.join(', ')}`;
-    console.warn(msg);
-    return callback(new Error(msg), false);
-  },
+  origin: true, // 🔓 PERMITE QUALQUER ORIGEM
   credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
-  allowedHeaders: [
-    'Authorization', 
-    'Content-Type', 
-    'X-Requested-With',
-    'Accept',
-    'Origin',
-    'Cache-Control',
-    'X-File-Name'
-  ],
-  exposedHeaders: ['set-cookie'],
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH', 'HEAD'],
+  allowedHeaders: ['*'], // 🔓 PERMITE QUALQUER HEADER
+  exposedHeaders: ['*'], // 🔓 EXPÕE QUALQUER HEADER
   optionsSuccessStatus: 200,
   preflightContinue: false
 }));
 
-
-// Rate limiting geral
-const limiter = rateLimit({
-  windowMs: rateLimiting.windowMs,
-  max: rateLimiting.maxRequests,
-  message: {
-    success: false,
-    error: 'Muitas requisições. Tente novamente em alguns minutos.'
-  },
-  standardHeaders: true,
-  legacyHeaders: false
+// 🔓 MIDDLEWARE ULTRA-PERMISSIVO PARA OPTIONS
+app.use((req, res, next) => {
+  console.log(`🔧 ${req.method} ${req.originalUrl} - Origin: ${req.headers.origin}`);
+  
+  if (req.method === 'OPTIONS') {
+    console.log('✅ Respondendo OPTIONS com headers ultra-permissivos');
+    res.header('Access-Control-Allow-Origin', '*');
+    res.header('Access-Control-Allow-Methods', '*');
+    res.header('Access-Control-Allow-Headers', '*');
+    res.header('Access-Control-Allow-Credentials', 'true');
+    res.header('Access-Control-Max-Age', '86400');
+    res.status(200).end();
+    return;
+  }
+  
+  // Para todas as outras requisições
+  res.header('Access-Control-Allow-Origin', req.headers.origin || '*');
+  res.header('Access-Control-Allow-Credentials', 'true');
+  
+  next();
 });
-app.use(limiter);
+
+// TEMPORARIAMENTE REMOVIDO: Helmet que pode estar interferindo
+// app.use(helmet({
+//   crossOriginResourcePolicy: { policy: "cross-origin" }
+// }));
+
+// TEMPORARIAMENTE REMOVIDO: Rate limiting que pode estar interferindo
+// const limiter = rateLimit({
+//   windowMs: rateLimiting.windowMs,
+//   max: rateLimiting.maxRequests,
+//   message: {
+//     success: false,
+//     error: 'Muitas requisições. Tente novamente em alguns minutos.'
+//   },
+//   standardHeaders: true,
+//   legacyHeaders: false
+// });
+// app.use(limiter);
 
 // Trust proxy para obter IP real (importante para rate limiting e anti-abuse)
 app.set('trust proxy', 1);
 
-// === LOGGING E MONITORAMENTO ===
-app.use(morganMiddleware); // HTTP logging
-app.use(structuredLogging); // Log estruturado
-app.use(requestMonitoring); // Métricas de request
-app.use(rateLimitMonitoring); // Monitoramento de rate limit
-app.use(resourceMonitoring); // Monitoramento de recursos
-app.use(securityLogging); // Detecção de atividades suspeitas
 
-// === MIDDLEWARES DE BANIMENTO ===
-app.use(checkIpBan); // Verificar banimento de IP em todas as rotas
+app.use(morganMiddleware);
+app.use(structuredLogging);
+app.use(requestMonitoring);
+app.use(rateLimitMonitoring);
+app.use(resourceMonitoring);
+app.use(securityLogging);
+app.use(checkIpBan);
 
 // Parsing de JSON
 app.use(express.json({ limit: '10mb' }));
@@ -123,19 +115,52 @@ app.use((req, res, next) => {
   next();
 });
 
-// Health check
+// 🧪 ENDPOINT DE TESTE CORS
+app.all('/cors-test', (req, res) => {
+  console.log('🧪 CORS Test endpoint chamado:', {
+    method: req.method,
+    origin: req.headers.origin,
+    headers: req.headers
+  });
+  
+  res.json({
+    success: true,
+    message: 'CORS está funcionando!',
+    method: req.method,
+    origin: req.headers.origin,
+    timestamp: new Date().toISOString()
+  });
+});
+
+
 app.get('/api/v1/health', (req, res) => {
+  console.log('🏥 Health check chamado:', {
+    origin: req.headers.origin,
+    method: req.method
+  });
+  
   const realtimeStats = req.realtimeService ? 
     req.realtimeService.getSystemStats() :
     { status: 'not_initialized' };
 
   res.json({
     success: true,
+    message: 'API funcionando com CORS de teste',
     timestamp: new Date().toISOString(),
     uptime: process.uptime(),
     memory: process.memoryUsage(),
     environment: nodeEnv,
-    realtime: realtimeStats
+    realtime: realtimeStats,
+    jobs: {
+      dailyBonus: {
+        status: app.locals.dailyBonusJob ? 'running' : 'not_initialized',
+        isRunning: app.locals.dailyBonusJob?.isRunning || false
+      }
+    },
+    cors: {
+      mode: 'ULTRA_PERMISSIVE_TEST',
+      warning: 'Esta configuração é apenas para teste!'
+    }
   });
 });
 
