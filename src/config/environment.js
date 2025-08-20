@@ -28,18 +28,12 @@ module.exports = {
     serviceKey: process.env.SUPABASE_SERVICE_KEY
   },
 
+  // Firebase - deixar chave privada SEM normalização aqui
   firebase: {
     type: process.env.FIREBASE_TYPE,
     project_id: process.env.FIREBASE_PROJECT_ID,
     private_key_id: process.env.FIREBASE_PRIVATE_KEY_ID,
-    private_key: process.env.FIREBASE_PRIVATE_KEY ? 
-      process.env.FIREBASE_PRIVATE_KEY
-        .replace(/\\n/g, '\n')
-        .replace(/\\r/g, '\r')
-        .replace(/\r\n/g, '\n')
-        .replace(/"/g, '')
-        .trim()
-      : null,
+    private_key: process.env.FIREBASE_PRIVATE_KEY, // SEM .replace() aqui
     client_email: process.env.FIREBASE_CLIENT_EMAIL,
     client_id: process.env.FIREBASE_CLIENT_ID,
     auth_uri: process.env.FIREBASE_AUTH_URI,
@@ -48,11 +42,12 @@ module.exports = {
     client_x509_cert_url: process.env.FIREBASE_CLIENT_X509_CERT_URL
   },
 
+  // Redis configuração para instância externa
   redis: {
     host: process.env.REDIS_HOST || 'localhost',
-    port: process.env.REDIS_PORT || 6379,
+    port: parseInt(process.env.REDIS_PORT) || 6379,
     password: process.env.REDIS_PASSWORD || undefined,
-    db: process.env.REDIS_DB || 0
+    db: parseInt(process.env.REDIS_DB) || 0
   },
 
   websocket: {
