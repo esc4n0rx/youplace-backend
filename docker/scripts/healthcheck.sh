@@ -3,7 +3,7 @@ set -e
 
 # Health check para a aplicação Node.js
 echo "Checking application health..."
-curl -f http://localhost:3001/api/v1/health || {
+curl -f http://localhost:5001/api/v1/health || {
   echo "❌ Application health check failed"
   exit 1
 }

@@ -1,11 +1,11 @@
 require('dotenv').config();
 
 module.exports = {
-  port: process.env.PORT || 3001,
+  port: process.env.PORT || 5001,
   nodeEnv: process.env.NODE_ENV || 'development',
   
   // Domain configuration
-  apiDomain: process.env.API_DOMAIN || 'http://localhost:3001',
+  apiDomain: process.env.API_DOMAIN || 'http://localhost:5001',
   frontendDomains: process.env.FRONTEND_DOMAINS ? 
     process.env.FRONTEND_DOMAINS.split(',').map(d => d.trim()) :
     [

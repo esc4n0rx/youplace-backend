@@ -31,7 +31,7 @@ COPY --chown=youplace:nodejs . .
 RUN mkdir -p logs && chown youplace:nodejs logs
 
 # Expor porta
-EXPOSE 3001
+EXPOSE 5001
 
 # Usuário não-root
 USER youplace
@@ -59,7 +59,7 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
   CMD /usr/local/bin/healthcheck.sh
 
 # Expor porta
-EXPOSE 3001
+EXPOSE 5001
 
 # Usuário não-root
 USER youplace
