@@ -3,7 +3,11 @@ const cors = require('cors');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
 
-const { rateLimiting } = require('./config/environment');
+const { 
+  rateLimiting, 
+  nodeEnv, 
+  frontendDomains 
+} = require('./config/environment');
 const authRoutes = require('./presentation/routes/auth-routes');
 const pixelRoutes = require('./presentation/routes/pixel-routes');
 const creditRoutes = require('./presentation/routes/credit-routes');
@@ -32,14 +36,53 @@ const app = express();
 const dailyBonusJob = new DailyBonusJob();
 
 // Middleware de segurança
-app.use(helmet());
+app.use(helmet({
+  crossOriginEmbedderPolicy: false, // Para permitir requests cross-origin
+  contentSecurityPolicy: {
+    directives: {
+      "cross-origin-embedder-policy": false,
+    },
+  },
+}));
 
-// CORS
+// CORS - Configuração ajustada para produção
 app.use(cors({
-  origin: process.env.NODE_ENV === 'production'
-    ? frontendDomains
-    : ['http://localhost:3000', 'https://youplace.space', 'https://www.youplace.space','http://youplace.space'],
-  // ...
+  origin: function (origin, callback) {
+    // Permitir requests sem origin (mobile apps, Postman, etc.)
+    if (!origin) return callback(null, true);
+    
+    const allowedOrigins = nodeEnv === 'production' 
+      ? frontendDomains // Usar domínios configurados
+      : [
+          'http://localhost:3000', 
+          'http://localhost:3001',
+          'https://youplace.space',
+          'http://youplace.space',
+          'https://www.youplace.space',
+          'http://www.youplace.space'
+        ];
+    
+    if (allowedOrigins.indexOf(origin) !== -1) {
+      callback(null, true);
+    } else {
+      console.warn(`CORS: Origin ${origin} não permitido`);
+      callback(new Error('Não permitido pelo CORS'), false);
+    }
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
+  allowedHeaders: [
+    'Authorization', 
+    'Content-Type', 
+    'X-Requested-With',
+    'Accept',
+    'Origin',
+    'Cache-Control',
+    'X-File-Name'
+  ],
+  exposedHeaders: ['X-Total-Count', 'X-Page-Count'],
+  optionsSuccessStatus: 200, // Para suportar navegadores legados
+  preflightContinue: false // Finalizar preflight requests aqui
 }));
 
 // Rate limiting geral
@@ -55,38 +98,6 @@ app.use(limiter);
 
 // Trust proxy para obter IP real (importante para rate limiting e anti-abuse)
 app.set('trust proxy', 1);
-
-// Health check
-app.get('/health', (req, res) => {
-  const realtimeStats = req.realtimeService ? 
-    req.realtimeService.getSystemStats() : 
-    { error: 'RealtimeService not available' };
-
-  res.status(200).json({
-    success: true,
-    message: 'YouPlace Backend is running',
-    timestamp: new Date().toISOString(),
-    cronJobs: {
-      dailyBonus: 'active'
-    },
-    version: '1.0.0',
-    uptime: process.uptime(),
-    realtime: realtimeStats
-  });
-});
-
-// Rota alternativa para compatibilidade com healthcheck
-app.get('/api/v1/health', (req, res) => {
-  res.status(200).json({
-    success: true,
-    status: 'healthy',
-    timestamp: new Date().toISOString(),
-    uptime: process.uptime(),
-    memory: process.memoryUsage(),
-    env: process.env.NODE_ENV
-  });
-});
-
 
 // === LOGGING E MONITORAMENTO ===
 app.use(morganMiddleware); // HTTP logging
@@ -109,40 +120,34 @@ app.use((req, res, next) => {
   next();
 });
 
-// Rotas da API
-app.use('/api/v1/auth', authRoutes);
-app.use('/api/v1/pixels', checkUserBan, pixelRoutes);
-app.use('/api/v1/credits', checkUserBan, creditRoutes);
-app.use('/api/v1/gamification', checkUserBan, gamificationRoutes);
-app.use('/api/v1/monitoring', monitoringRoutes);
-app.use('/api/v1/admin', adminRoutes);
-app.use('/api/v1/realtime', realtimeRoutes); // NOVO: rotas de tempo real
+// Health check
+app.get('/health', (req, res) => {
+  const realtimeStats = req.realtimeService ? 
+    req.realtimeService.getConnectionStats() : 
+    { connectedClients: 0, totalRooms: 0 };
+    
+  res.json({
+    success: true,
+    timestamp: new Date().toISOString(),
+    environment: nodeEnv,
+    uptime: process.uptime(),
+    memory: process.memoryUsage(),
+    realtime: realtimeStats
+  });
+});
 
-// Middleware de erro de logging ANTES do handler de erro
-app.use(errorLogging);
+// Middleware de verificação de banimento por usuário (após autenticação)
+app.use('/auth', authRoutes);
+app.use('/pixels', checkUserBan, pixelRoutes);
+app.use('/credits', checkUserBan, creditRoutes);
+app.use('/gamification', checkUserBan, gamificationRoutes);
+app.use('/monitoring', monitoringRoutes);
+app.use('/admin', adminRoutes);
+app.use('/realtime', realtimeRoutes); // NOVO
 
-// Middleware de erro 404
+// Middleware de erro (deve ser o último)
 app.use(notFoundHandler);
-
-// Middleware de tratamento de erros
 app.use(errorHandler);
-
-// Inicializar cron jobs
-if (process.env.NODE_ENV !== 'test') {
-  dailyBonusJob.start();
-}
-
-// Graceful shutdown
-process.on('SIGTERM', () => {
-  console.log('🛑 Recebido SIGTERM, parando jobs...');
-  dailyBonusJob.stop();
-  process.exit(0);
-});
-
-process.on('SIGINT', () => {
-  console.log('🛑 Recebido SIGINT, parando jobs...');
-  dailyBonusJob.stop();
-  process.exit(0);
-});
+app.use(errorLogging);
 
 module.exports = app;
