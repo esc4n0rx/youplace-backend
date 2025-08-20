@@ -124,7 +124,7 @@ app.use((req, res, next) => {
 // Health check
 app.get('/api/v1/health', (req, res) => {
   const realtimeStats = req.realtimeService ? 
-    req.realtimeService.getConnectionStats() : 
+    req.realtimeService.getSystemStats() : 
     { connectedClients: 0, totalRooms: 0 };
     
   res.json({
