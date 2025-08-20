@@ -3,18 +3,20 @@ const cors = require('cors');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
 
+// CORREÇÃO: Importar as variáveis necessárias do environment
 const { 
   rateLimiting, 
   nodeEnv, 
   frontendDomains 
 } = require('./config/environment');
+
 const authRoutes = require('./presentation/routes/auth-routes');
 const pixelRoutes = require('./presentation/routes/pixel-routes');
 const creditRoutes = require('./presentation/routes/credit-routes');
 const gamificationRoutes = require('./presentation/routes/gamification-routes');
 const monitoringRoutes = require('./presentation/routes/monitoring-routes');
 const adminRoutes = require('./presentation/routes/admin-routes');
-const realtimeRoutes = require('./presentation/routes/realtime-routes'); // NOVO
+const realtimeRoutes = require('./presentation/routes/realtime-routes');
 const { errorHandler, notFoundHandler } = require('./presentation/middlewares/error-middleware');
 const { 
   morganMiddleware, 
@@ -37,38 +39,27 @@ const dailyBonusJob = new DailyBonusJob();
 
 // Middleware de segurança
 app.use(helmet({
-  crossOriginEmbedderPolicy: false, 
-
-  contentSecurityPolicy: {
-    directives: {
-      defaultSrc: ["'self'"],
-    },
-  },
+  crossOriginResourcePolicy: { policy: "cross-origin" }
 }));
 
-// CORS - Configuração ajustada para produção
+// CORS configurado corretamente
 app.use(cors({
   origin: function (origin, callback) {
-    // Permitir requests sem origin (mobile apps, Postman, etc.)
+    // Permitir requisições sem origin (ex: mobile apps, Postman)
     if (!origin) return callback(null, true);
     
     const allowedOrigins = nodeEnv === 'production' 
-      ? frontendDomains // Usar domínios configurados
-      : [
-          'http://localhost:3000', 
-          'http://localhost:3001',
-          'https://youplace.space',
-          'http://youplace.space',
-          'https://www.youplace.space',
-          'http://www.youplace.space'
-        ];
+      ? frontendDomains
+      : ['https://www.youplace.space', 'https://youplace.space'];
+      
+    console.log('CORS Check:', { origin, allowedOrigins, nodeEnv });
     
-    if (allowedOrigins.indexOf(origin) !== -1) {
-      callback(null, true);
-    } else {
-      console.warn(`CORS: Origin ${origin} não permitido`);
-      callback(new Error('Não permitido pelo CORS'), false);
+    if (allowedOrigins.includes(origin)) {
+      return callback(null, true);
     }
+    
+    const msg = `Origin ${origin} não permitida pelo CORS`;
+    return callback(new Error(msg), false);
   },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
@@ -81,10 +72,23 @@ app.use(cors({
     'Cache-Control',
     'X-File-Name'
   ],
-  exposedHeaders: ['X-Total-Count', 'X-Page-Count'],
-  optionsSuccessStatus: 200, // Para suportar navegadores legados
-  preflightContinue: false // Finalizar preflight requests aqui
+  exposedHeaders: ['set-cookie'],
+  optionsSuccessStatus: 200,
+  preflightContinue: false
 }));
+
+// Middleware explícito para OPTIONS (preflight requests)
+app.use((req, res, next) => {
+  if (req.method === 'OPTIONS') {
+    res.header('Access-Control-Allow-Origin', req.headers.origin);
+    res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS, PATCH');
+    res.header('Access-Control-Allow-Headers', 'Authorization, Content-Type, X-Requested-With, Accept, Origin, Cache-Control, X-File-Name');
+    res.header('Access-Control-Allow-Credentials', 'true');
+    res.status(200).end();
+    return;
+  }
+  next();
+});
 
 // Rate limiting geral
 const limiter = rateLimit({
@@ -93,7 +97,9 @@ const limiter = rateLimit({
   message: {
     success: false,
     error: 'Muitas requisições. Tente novamente em alguns minutos.'
-  }
+  },
+  standardHeaders: true,
+  legacyHeaders: false
 });
 app.use(limiter);
 
@@ -122,33 +128,32 @@ app.use((req, res, next) => {
 });
 
 // Health check
-app.get('/api/v1/health', (req, res) => {
-  const realtimeStats = req.realtimeService ? 
-    req.realtimeService.getSystemStats() : 
-    { connectedClients: 0, totalRooms: 0 };
-    
+app.get('/health', (req, res) => {
+  const realtimeStats = req.realtimeService ?
+    req.realtimeService.getStats() :
+    { status: 'not_initialized' };
+
   res.json({
     success: true,
     timestamp: new Date().toISOString(),
-    environment: nodeEnv,
     uptime: process.uptime(),
     memory: process.memoryUsage(),
+    environment: nodeEnv,
     realtime: realtimeStats
   });
 });
 
-// Middleware de verificação de banimento por usuário (após autenticação)
+// === ROTAS ===
 app.use('/auth', authRoutes);
-app.use('/pixels', checkUserBan, pixelRoutes);
-app.use('/credits', checkUserBan, creditRoutes);
-app.use('/gamification', checkUserBan, gamificationRoutes);
+app.use('/pixels', pixelRoutes);
+app.use('/credits', creditRoutes);
+app.use('/gamification', gamificationRoutes);
 app.use('/monitoring', monitoringRoutes);
 app.use('/admin', adminRoutes);
-app.use('/realtime', realtimeRoutes); // NOVO
+app.use('/realtime', realtimeRoutes);
 
-// Middleware de erro (deve ser o último)
+// Middleware de tratamento de erros (deve ser o último)
 app.use(notFoundHandler);
 app.use(errorHandler);
-app.use(errorLogging);
 
 module.exports = app;
