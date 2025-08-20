@@ -130,7 +130,7 @@ app.use((req, res, next) => {
 // Health check
 app.get('/api/v1/health', (req, res) => {
   const realtimeStats = req.realtimeService ?
-    req.realtimeService.getStats() :
+    req.realtimeService.getSystemStats() :
     { status: 'not_initialized' };
 
   res.json({
