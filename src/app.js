@@ -36,29 +36,37 @@ const app = express();
 
 // Inicializar job de bônus diário
 const dailyBonusJob = new DailyBonusJob();
+dailyBonusJob.start();
+
+app.locals.dailyBonusJob = dailyBonusJob;
 
 // Middleware de segurança
 app.use(helmet({
   crossOriginResourcePolicy: { policy: "cross-origin" }
 }));
 
-// CORS configurado corretamente
+// CORREÇÃO PRINCIPAL: CORS configurado corretamente para produção
 app.use(cors({
   origin: function (origin, callback) {
-    // Permitir requisições sem origin (ex: mobile apps, Postman)
+    // Permitir requisições sem origin (ex: mobile apps, Postman, testes)
     if (!origin) return callback(null, true);
     
-    const allowedOrigins = nodeEnv === 'production' 
-      ? frontendDomains
-      : ['https://www.youplace.space', 'https://youplace.space'];
+    // CORRIGIDO: Usar frontendDomains sempre, seja produção ou desenvolvimento
+    const allowedOrigins = frontendDomains;
       
-    console.log('CORS Check:', { origin, allowedOrigins, nodeEnv });
+    console.log('CORS Check:', { 
+      origin, 
+      allowedOrigins, 
+      nodeEnv,
+      isAllowed: allowedOrigins.includes(origin)
+    });
     
     if (allowedOrigins.includes(origin)) {
       return callback(null, true);
     }
     
-    const msg = `Origin ${origin} não permitida pelo CORS`;
+    const msg = `Origin ${origin} não permitida pelo CORS. Domínios permitidos: ${allowedOrigins.join(', ')}`;
+    console.warn(msg);
     return callback(new Error(msg), false);
   },
   credentials: true,
@@ -77,18 +85,6 @@ app.use(cors({
   preflightContinue: false
 }));
 
-// Middleware explícito para OPTIONS (preflight requests)
-app.use((req, res, next) => {
-  if (req.method === 'OPTIONS') {
-    res.header('Access-Control-Allow-Origin', req.headers.origin);
-    res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS, PATCH');
-    res.header('Access-Control-Allow-Headers', 'Authorization, Content-Type, X-Requested-With, Accept, Origin, Cache-Control, X-File-Name');
-    res.header('Access-Control-Allow-Credentials', 'true');
-    res.status(200).end();
-    return;
-  }
-  next();
-});
 
 // Rate limiting geral
 const limiter = rateLimit({
@@ -129,7 +125,7 @@ app.use((req, res, next) => {
 
 // Health check
 app.get('/api/v1/health', (req, res) => {
-  const realtimeStats = req.realtimeService ?
+  const realtimeStats = req.realtimeService ? 
     req.realtimeService.getSystemStats() :
     { status: 'not_initialized' };
 
