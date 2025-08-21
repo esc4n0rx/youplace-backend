@@ -1,0 +1,19 @@
+# Ignora dependências locais, pois elas serão instaladas dentro do container
+node_modules
+
+# Ignora logs
+npm-debug.log
+logs/
+
+# Ignora arquivos de ambiente locais (eles devem ser injetados no servidor)
+.env
+.env.*
+!.env.example
+
+# Ignora arquivos do Git
+.git
+.gitignore
+
+# Ignora arquivos do Docker (não precisa incluir o próprio Dockerfile na imagem)
+Dockerfile
+.dockerignore
