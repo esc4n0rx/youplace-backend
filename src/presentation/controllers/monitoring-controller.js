@@ -489,12 +489,7 @@ class MonitoringController {
       const overallStatus = Object.values(services).every(s => s.status === 'healthy') ? 'healthy' : 'degraded';
 
       res.status(200).json({
-        success: true,
-        data: {
-          overallStatus,
-          services,
-          timestamp: new Date().toISOString()
-        }
+        Health: { Status: overallStatus }
       });
     } catch (error) {
       next(error);

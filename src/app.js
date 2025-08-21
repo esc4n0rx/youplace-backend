@@ -147,33 +147,8 @@ app.all('/cors-test', (req, res) => {
 
 
 app.get('/api/v1/health', (req, res) => {
-  console.log('🏥 Health check chamado:', {
-    origin: req.headers.origin,
-    method: req.method
-  });
-  
-  const realtimeStats = req.realtimeService ? 
-    req.realtimeService.getSystemStats() :
-    { status: 'not_initialized' };
-
-  res.json({
-    success: true,
-    message: 'API funcionando com CORS de teste',
-    timestamp: new Date().toISOString(),
-    uptime: process.uptime(),
-    memory: process.memoryUsage(),
-    environment: nodeEnv,
-    realtime: realtimeStats,
-    jobs: {
-      dailyBonus: {
-        status: app.locals.dailyBonusJob ? 'running' : 'not_initialized',
-        isRunning: app.locals.dailyBonusJob?.isRunning || false
-      }
-    },
-    cors: {
-      mode: 'ULTRA_PERMISSIVE_TEST',
-      warning: 'Esta configuração é apenas para teste!'
-    }
+  res.status(200).json({
+    Health: { Status: 'healthy' }
   });
 });
 
