@@ -34,18 +34,19 @@ const DailyBonusJob = require('./jobs/daily-bonus-job');
 
 const app = express();
 
+// ✅ HEALTHCHECK ENDPOINT - DEVE VIR ANTES DE QUALQUER MIDDLEWARE
 app.get('/health', (req, res) => {
+  // Verificação simples e rápida para o Docker healthcheck
   res.status(200).json({
     Health: {
       Status: 'healthy',
       Timestamp: new Date().toISOString(),
       Uptime: Math.floor(process.uptime()),
-      Environment: nodeEnv
+      Environment: nodeEnv,
+      Version: '1.0.0'
     }
   });
 });
-
-
 
 // CORREÇÃO: Inicializar E INICIAR job de bônus diário
 const dailyBonusJob = new DailyBonusJob();
@@ -109,7 +110,6 @@ app.use((req, res, next) => {
 // Trust proxy para obter IP real (importante para rate limiting e anti-abuse)
 app.set('trust proxy', 1);
 
-
 app.use(morganMiddleware);
 app.use(structuredLogging);
 app.use(requestMonitoring);
@@ -145,24 +145,29 @@ app.all('/cors-test', (req, res) => {
   });
 });
 
-
+// Health endpoint para API versioned também
 app.get('/api/v1/health', (req, res) => {
   res.status(200).json({
-    Health: { Status: 'healthy' }
+    Health: { 
+      Status: 'healthy',
+      Timestamp: new Date().toISOString(),
+      API_Version: 'v1'
+    }
   });
 });
 
 // === ROTAS ===
-app.use('/auth', authRoutes);
-app.use('/pixels', pixelRoutes);
-app.use('/credits', creditRoutes);
-app.use('/gamification', gamificationRoutes);
-app.use('/monitoring', monitoringRoutes);
-app.use('/admin', adminRoutes);
-app.use('/realtime', realtimeRoutes);
+app.use('/api/v1/auth', authRoutes);
+app.use('/api/v1/pixels', pixelRoutes);
+app.use('/api/v1/credits', creditRoutes);
+app.use('/api/v1/gamification', gamificationRoutes);
+app.use('/api/v1/monitoring', monitoringRoutes);
+app.use('/api/v1/admin', adminRoutes);
+app.use('/api/v1/realtime', realtimeRoutes);
 
 // Middleware de tratamento de erros (deve ser o último)
 app.use(notFoundHandler);
+app.use(errorLogging);
 app.use(errorHandler);
 
 module.exports = app;

@@ -25,11 +25,18 @@ WORKDIR /app
 # Isso desativa logs de debug e otimiza algumas bibliotecas
 ENV NODE_ENV=production
 
+# Instalar curl para o healthcheck
+RUN apk add --no-cache curl
+
 # Copia as dependências instaladas e o código do estágio de build
 COPY --from=build /app .
 
 # Expõe a porta em que a aplicação roda (conforme seu src/config/environment.js)
 EXPOSE 5001
+
+# Configurar healthcheck
+HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
+  CMD curl -f http://localhost:5001/health || exit 1
 
 # Comando para iniciar a aplicação
 # Usamos a forma de array para evitar problemas com shell
