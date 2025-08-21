@@ -8,6 +8,10 @@ const logger = require('./src/config/logger');
 // Criar servidor HTTP
 const httpServer = http.createServer(app);
 
+httpServer.timeout = 30000; // 30 segundos
+httpServer.keepAliveTimeout = 65000; // 65 segundos
+httpServer.headersTimeout = 66000; // 66 segundos
+
 // Inicializar WebSocket Server
 const socketServer = new SocketServer(httpServer);
 

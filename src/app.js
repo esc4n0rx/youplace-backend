@@ -34,6 +34,17 @@ const DailyBonusJob = require('./jobs/daily-bonus-job');
 
 const app = express();
 
+app.get('/health', (req, res) => {
+  res.status(200).json({ 
+    status: 'ok',
+    timestamp: new Date().toISOString(),
+    uptime: Math.floor(process.uptime()),
+    environment: nodeEnv
+  });
+});
+
+
+
 // CORREÇÃO: Inicializar E INICIAR job de bônus diário
 const dailyBonusJob = new DailyBonusJob();
 dailyBonusJob.start();
