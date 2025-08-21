@@ -1,17 +1,22 @@
-[providers]
-node = "18"
+# Providers - deve ser uma lista, não um mapa
+providers = ["node"]
 
+# Variáveis de ambiente
 [variables]
 NODE_ENV = "production"
 
+# Fase de setup
 [phases.setup]
 nixPkgs = ["nodejs-18_x", "npm"]
 
+# Fase de instalação
 [phases.install]
 cmds = ["npm ci --only=production"]
 
+# Fase de build
 [phases.build]
 cmds = ["echo 'Build phase completed'"]
 
+# Comando de start
 [start]
 cmd = "npm start"
